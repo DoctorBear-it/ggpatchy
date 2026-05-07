@@ -6,7 +6,7 @@
 # ------------------------------------------------------------
 
 #' @importFrom grid linesGrob pointsGrob rectGrob gTree gList clipGrob
-#' @importFrom grid viewport unit gpar nullGrob grobTree polylineGrob
+#' @importFrom grid viewport unit gpar nullGrob grobTree polylineGrob circleGrob
 NULL
 
 # ---- Internal pattern registry -----------------------------------------
@@ -146,22 +146,22 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
     )
   })
 
-  # dots — grid of small circles
+  # dots — grid of small circles using circleGrob which respects viewports
   register_pattern("dots", function(x, y, width, height, gp, params) {
     spacing <- params$pattern_spacing %||% 0.1
-    size    <- params$pattern_size    %||% 0.4  # in mm
+    size    <- params$pattern_size    %||% 0.35  # as fraction of spacing
     dot_gp  <- grid::gpar(col = NA,
                           fill = gp$pattern_colour %||% "black")
-    xs <- seq(0, 1, by = spacing)
-    ys <- seq(0, 1, by = spacing)
+    xs <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
+    ys <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
     grid_coords <- expand.grid(x = xs, y = ys)
+    # circleGrob with "snpc" units scales with the viewport correctly
     clipped_grob(x, y, width, height,
-      grid::pointsGrob(
-        x    = unit(grid_coords$x, "npc"),
-        y    = unit(grid_coords$y, "npc"),
-        pch  = 19,
-        size = unit(size, "mm"),
-        gp   = dot_gp
+      grid::circleGrob(
+        x = grid::unit(grid_coords$x, "npc"),
+        y = grid::unit(grid_coords$y, "npc"),
+        r = grid::unit(size * spacing / 2, "snpc"),
+        gp = dot_gp
       )
     )
   })

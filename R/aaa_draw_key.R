@@ -31,10 +31,18 @@ draw_key_pattern <- function(data, params, size) {
     pattern_linewidth = data$pattern_linewidth %||% 1
   )
 
+  # Use wider spacing in legend keys so patterns aren't a dense blob
+  legend_params <- list(
+    pattern_spacing   = (data$pattern_spacing   %||% 0.08) * 2.5,
+    pattern_angle     =  data$pattern_angle     %||% 45,
+    pattern_size      =  data$pattern_size      %||% 0.35,
+    pattern_linewidth =  data$pattern_linewidth %||% 1
+  )
+
   overlay <- pattern_fn(
     x = 0.05, y = 0.05, width = 0.9, height = 0.9,
     gp     = extra_gp,
-    params = params
+    params = legend_params
   )
 
   grid::grobTree(bg, overlay)

@@ -192,6 +192,12 @@ geom_col_pattern <- function(
     show.legend = NA,
     inherit.aes = TRUE
 ) {
+  # Only pass `width` through if the user supplied it. Passing `width = NULL`
+  # triggers ggplot2's "Ignoring empty aesthetic: `width`" warning during
+  # compute_geom_2, because it treats the param slot as an unmapped aesthetic.
+  params <- rlang::list2(na.rm = na.rm, ...)
+  if (!is.null(width)) params$width <- width
+
   ggplot2::layer(
     data        = data,
     mapping     = mapping,
@@ -200,7 +206,7 @@ geom_col_pattern <- function(
     position    = position,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
-    params      = rlang::list2(width = width, na.rm = na.rm, ...)
+    params      = params
   )
 }
 
@@ -216,6 +222,9 @@ geom_bar_pattern <- function(
     show.legend = NA,
     inherit.aes = TRUE
 ) {
+  params <- rlang::list2(na.rm = na.rm, ...)
+  if (!is.null(width)) params$width <- width
+
   ggplot2::layer(
     data        = data,
     mapping     = mapping,
@@ -224,6 +233,6 @@ geom_bar_pattern <- function(
     position    = position,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
-    params      = rlang::list2(width = width, na.rm = na.rm, ...)
+    params      = params
   )
 }

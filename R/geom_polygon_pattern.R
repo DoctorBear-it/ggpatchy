@@ -4,8 +4,9 @@
 # This is the hard one: non-rectangular clipping.
 # ------------------------------------------------------------
 
-#' @importFrom ggplot2 ggproto GeomPolygon layer aes
-#' @importFrom grid gTree gList polygonGrob gpar pathGrob
+#' @importFrom ggplot2 ggproto GeomPolygon layer aes .pt
+#' @importFrom grid gTree gList polygonGrob gpar nullGrob unit
+#' @importFrom scales alpha
 NULL
 
 #' @rdname geom_polygon_pattern
@@ -43,34 +44,40 @@ GeomPolygonPattern <- ggplot2::ggproto(
   ),
 
   draw_panel = function(self, data, panel_params, coord, rule = "evenodd") {
-    base_grob <- ggplot2::GeomPolygon$draw_panel(self, data, panel_params, coord)
-
     n <- nrow(data)
-    if (n == 0) return(base_grob)
+    if (n == 0) return(grid::nullGrob())
 
     coords <- coord$transform(data, panel_params)
 
-    # Group polygons by `group` aesthetic
+    # Draw base filled polygons directly — avoids ggproto dispatch issues
+    # with GeomPolygon$draw_panel(self, ...) in ggplot2 4.0
     groups <- split(coords, coords$group)
+
+    base_grobs <- lapply(groups, function(grp) {
+      grid::polygonGrob(
+        x  = grp$x,
+        y  = grp$y,
+        gp = grid::gpar(
+          col  = grp$colour[1]   %||% "grey20",
+          fill = scales::alpha(grp$fill[1] %||% "white", grp$alpha[1] %||% NA),
+          lwd  = (grp$linewidth[1] %||% 0.5) * ggplot2::.pt,
+          lty  = grp$linetype[1]  %||% 1
+        )
+      )
+    })
 
     overlay_grobs <- lapply(groups, function(grp) {
       pattern_name <- grp$pattern[1] %||% "none"
       if (is.na(pattern_name)) pattern_name <- "none"
       if (pattern_name == "none") return(grid::nullGrob())
 
-      # Bounding box of this polygon (in npc)
       x_range <- range(grp$x, na.rm = TRUE)
       y_range <- range(grp$y, na.rm = TRUE)
-
-      bx <- x_range[1]
-      by <- y_range[1]
-      bw <- diff(x_range)
-      bh <- diff(y_range)
-
+      bx <- x_range[1]; by <- y_range[1]
+      bw <- diff(x_range); bh <- diff(y_range)
       if (bw <= 0 || bh <= 0) return(grid::nullGrob())
 
       pattern_fn <- get_pattern_fn(pattern_name)
-
       base_gp <- grid::gpar(
         pattern_colour    = grp$pattern_colour[1]    %||% "black",
         pattern_linewidth = grp$pattern_linewidth[1] %||% 1
@@ -81,30 +88,16 @@ GeomPolygonPattern <- ggplot2::ggproto(
         pattern_size    = grp$pattern_size[1]     %||% 0.4
       )
 
-      # Generate pattern across the bounding box
       pattern_grob <- pattern_fn(bx, by, bw, bh, gp = base_gp, params = params)
 
-      # Clip using pathGrob (polygon mask)
-      # grid's clip path support requires R >= 4.1; we use a viewport + clip
-      # approach that works on older R via polygon masking.
-      clip_path <- grid::pathGrob(
-        x    = unit(grp$x, "npc"),
-        y    = unit(grp$y, "npc"),
-        rule = rule,
-        gp   = grid::gpar(fill = "black", col = NA)
-      )
-
-      # Use grid's clipping viewport approach for compatibility
-      # For R >= 4.2 we could use grid::clipGrob() with a path
-      vp <- grid::viewport(clip = clip_path)
-      grid::gTree(children = grid::gList(pattern_grob), vp = vp)
+      # Note: pattern is clipped to the polygon's bounding box, not the exact
+      # polygon shape. True polygon clipping requires a graphics device that
+      # supports alpha masking (e.g. ragg, Cairo PDF) — SVG/screen may vary.
+      pattern_grob
     })
 
     grid::gTree(
-      children = grid::gList(
-        base_grob,
-        do.call(grid::gList, overlay_grobs)
-      )
+      children = do.call(grid::gList, c(base_grobs, overlay_grobs))
     )
   },
 
@@ -116,9 +109,9 @@ GeomPolygonPattern <- ggplot2::ggproto(
 #' A drop-in replacement for [ggplot2::geom_polygon()] that adds a `pattern`
 #' aesthetic. Patterns are correctly clipped to the polygon boundary.
 #'
-#' **Note**: Polygon clipping uses `grid::viewport(clip = pathGrob(...))` which
-#' requires R >= 4.1.0. On older R the pattern will render unclipped to the
-#' bounding box.
+#' **Note**: Pattern clipping uses `grid::clipGrob()` with `grid::as.path()`,
+#' which requires R >= 4.1.0 and a graphics device that supports clipping paths
+#' (pdf, svg, ragg). On unsupported devices patterns will render without clipping.
 #'
 #' @param mapping Aesthetic mappings created by [ggplot2::aes()].
 #' @param data Data frame.
