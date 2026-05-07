@@ -10,7 +10,7 @@ library(ggplot2)
 library(ggpatchy)
 
 ggplot(mpg, aes(class, fill = class, pattern = class)) +
-  geom_col_pattern(stat = "count") +
+  geom_bar_pattern() +
   scale_pattern_discrete() +
   scale_fill_brewer(palette = "Pastel1") +
   theme_minimal()
@@ -18,11 +18,18 @@ ggplot(mpg, aes(class, fill = class, pattern = class)) +
 
 ## Installation
 
-### With pixi (recommended)
+### From GitHub (standard R)
+
+```r
+# install.packages("pak")
+pak::pkg_install("DoctorBear-it/ggpatchy")
+```
+
+### With pixi (for development)
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourname/ggpatchy
+git clone https://github.com/DoctorBear-it/ggpatchy
 cd ggpatchy
 
 # Install everything (R, all deps, dev tools) in one shot
@@ -33,13 +40,6 @@ pixi run test
 
 # Load in an R session
 pixi run load
-```
-
-### From GitHub (standard R)
-
-```r
-# install.packages("pak")
-pak::pkg_install("yourname/ggpatchy")
 ```
 
 ## Available patterns
@@ -69,24 +69,56 @@ list_patterns()  # see all registered patterns
 | `pattern_angle`     | Angle in degrees (hatch)         | `45`      |
 | `pattern_size`      | Dot size in mm (dots pattern)    | `0.4`     |
 
+## Scales
+
+- `scale_pattern_manual(values = ...)` — explicit mapping; `values` may be a
+  named character vector (matched to factor levels by name) or unnamed
+  (matched positionally).
+- `scale_pattern_identity()` — use the data column's values directly as
+  pattern names. Best when your variable already contains valid pattern
+  names like `"hatch"` or `"dots"`.
+- `scale_pattern_discrete()` — auto-cycle through the built-in patterns in
+  factor-level order. No name lookup; use `scale_pattern_identity()` if you
+  want value-as-pattern semantics.
+
 ## Custom patterns
 
+Register a function that takes the bounding box of the shape (in npc) plus
+graphical parameters, and returns any grid grob:
+
 ```r
+library(grid)
+
 register_pattern("zigzag", function(x, y, width, height, gp, params) {
-  # x, y, width, height are npc coordinates of the shape's bounding box
-  # Return any grid grob; it will be clipped to the shape
   spacing <- params$pattern_spacing %||% 0.1
-  line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                        lwd = gp$pattern_linewidth %||% 1)
-  # ... build your grob ...
-  grid::nullGrob()  # replace with real grob
+  line_gp <- gpar(col = gp$pattern_colour %||% "black",
+                  lwd = gp$pattern_linewidth %||% 1)
+  ys <- seq(0, 1, by = spacing)
+  segs <- lapply(ys, function(y0) {
+    polylineGrob(
+      x  = unit(c(0, 0.5, 1), "npc"),
+      y  = unit(c(y0, y0 + spacing / 2, y0), "npc"),
+      gp = line_gp
+    )
+  })
+  vp <- viewport(x = x, y = y, width = width, height = height,
+                 just = c("left", "bottom"), clip = "on")
+  gTree(children = do.call(gList, segs), vp = vp)
 })
+```
+
+After registering, use it like any built-in pattern:
+
+```r
+ggplot(df, aes(group, value, fill = group, pattern = group)) +
+  geom_col_pattern() +
+  scale_pattern_manual(values = c(A = "zigzag", B = "hatch", C = "dots"))
 ```
 
 ## Geoms
 
-- `geom_col_pattern()` — columns (stat = "identity")
-- `geom_bar_pattern()` — bars (stat = "count")
+- `geom_col_pattern()` — columns (`stat = "identity"`)
+- `geom_bar_pattern()` — bars (`stat = "count"`)
 - `geom_polygon_pattern()` — arbitrary polygons with path-clipped patterns
 
 ## Why not ggpattern?
