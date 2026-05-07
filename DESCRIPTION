@@ -2,14 +2,22 @@ Package: ggpatchy
 Title: Simple Pattern Overlays for ggplot2
 Version: 0.1.0
 Authors@R: 
-    person("Timothy", "Barrett", email = "dr.timothy.j.barrett@gmail.com", role = c("aut", "cre"))
-Description: Provides a 'pattern' aesthetic for ggplot2 geoms that maps
+    person(
+      given   = "Timothy",
+      family  = "Barrett",
+      email   = "dr.timothy.j.barrett@gmail.com",
+      role    = c("aut", "cre"),
+      comment = c(ORCID = "0000-0002-7703-1011")
+    )
+Description: Provides a 'pattern' aesthetic for 'ggplot2' geoms that maps
     discrete variables to hatch, crosshatch, dot, and other overlay patterns
-    rendered via grid graphics. Patterns are clipped correctly to arbitrary
+    rendered via 'grid' graphics. Patterns are clipped correctly to arbitrary
     shapes and render cleanly at any resolution.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
 Imports:
     ggplot2 (>= 3.4.0),
     grid,
@@ -22,5 +30,5 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 URL: https://github.com/DoctorBear-it/ggpatchy
-BugReports: https://github.com/yourname/DoctorBear-it/issues
+BugReports: https://github.com/DoctorBear-it/ggpatchy/issues
 Config/roxygen2/version: 8.0.0

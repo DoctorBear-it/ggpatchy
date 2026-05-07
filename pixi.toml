@@ -38,8 +38,8 @@ rstudio = { cmd = "rstudio ggpatchy.Rproj", env = { RSTUDIO_WHICH_R = "${CONDA_P
 r-rhub = "*"
 
 [feature.publish.tasks]
-rhub-check = { cmd = "Rscript -e \"rhub::check('.')\"" }
-submit-cran = { cmd = "Rscript -e \"devtools::submit_cran('.')\"" }
+rhub-check = { cmd = "Rscript -e \"rhub::rhub_check()\"", depends-on = ["bootstrap"] }
+submit-cran = { cmd = "Rscript -e \"devtools::submit_cran('.')\"", depends-on = ["bootstrap"] }
 
 [environments]
 default = { features = [], solve-group = "default" }
