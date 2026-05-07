@@ -1,0 +1,46 @@
+[project]
+name = "ggpatchy"
+version = "0.1.0"
+description = "Simple pattern overlays for ggplot2"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+r-base = ">=4.4,<4.5"
+r-fs = ">=2.1.0"
+r-ggplot2 = ">=3.4.0"
+r-rlang = ">=1.0.0"
+r-scales = ">=1.2.0"
+r-vctrs = "*"
+r-devtools = "*"
+r-roxygen2 = ">=7.3.0"
+r-testthat = ">=3.0.0"
+r-usethis = "*"
+r-pkgdown = "*"
+r-vdiffr = "*"
+pkg-config = "*"
+cairo = "*"
+freetype = "*"
+
+[tasks]
+bootstrap = { cmd = "Rscript bootstrap.R" }
+document = { cmd = "Rscript -e \"roxygen2::roxygenise('.')\"", depends-on = ["bootstrap"] }
+test = { cmd = "Rscript -e \"devtools::test('.')\"", depends-on = ["bootstrap"] }
+check = { cmd = "Rscript -e \"devtools::check('.')\"", depends-on = ["bootstrap"] }
+check-fast = { cmd = "Rscript -e \"devtools::check('.', args = c('--no-vignettes', '--no-examples'))\"", depends-on = ["bootstrap"] }
+build = { cmd = "Rscript -e \"devtools::build('.')\"", depends-on = ["bootstrap"] }
+docs = { cmd = "Rscript -e \"pkgdown::build_site('.')\"", depends-on = ["bootstrap"] }
+install = { cmd = "Rscript -e \"devtools::install('.')\"", depends-on = ["bootstrap"] }
+libpaths = { cmd = "Rscript -e \".libPaths()\"", depends-on = ["bootstrap"] }
+rstudio = { cmd = "rstudio ggpatchy.Rproj", env = { RSTUDIO_WHICH_R = "${CONDA_PREFIX}/bin/R.exe" } }
+
+[feature.publish.dependencies]
+r-rhub = "*"
+
+[feature.publish.tasks]
+rhub-check = { cmd = "Rscript -e \"rhub::check('.')\"" }
+submit-cran = { cmd = "Rscript -e \"devtools::submit_cran('.')\"" }
+
+[environments]
+default = { features = [], solve-group = "default" }
+publish = { features = ["publish"], solve-group = "default" }

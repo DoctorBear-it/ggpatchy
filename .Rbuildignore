@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^pixi\.toml$
+^\.pixi$
+^pixi\.lock$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^README\.Rmd$
+^bootstrap\.R$
