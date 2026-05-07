@@ -9,3 +9,4 @@
 ^README\.Rmd$
 ^bootstrap\.R$
 ^cran-comments\.md$
+^ROADMAP\.md$
