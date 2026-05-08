@@ -5,7 +5,7 @@
 # ------------------------------------------------------------
 
 #' @importFrom ggplot2 ggproto GeomPolygon layer aes .pt
-#' @importFrom grid gTree gList polygonGrob gpar nullGrob unit
+#' @importFrom grid gTree gList polygonGrob gpar nullGrob unit viewport
 #' @importFrom scales alpha
 NULL
 
@@ -85,15 +85,12 @@ GeomPolygonPattern <- ggplot2::ggproto(
       params <- list(
         pattern_spacing = grp$pattern_spacing[1] %||% 0.08,
         pattern_angle   = grp$pattern_angle[1]   %||% 45,
-        pattern_size    = grp$pattern_size[1]     %||% 0.4
+        pattern_size    = grp$pattern_size[1]     %||% 0.4,
+        poly_x = (grp$x - bx) / bw,
+        poly_y = (grp$y - by) / bh
       )
 
-      pattern_grob <- pattern_fn(bx, by, bw, bh, gp = base_gp, params = params)
-
-      # Note: pattern is clipped to the polygon's bounding box, not the exact
-      # polygon shape. True polygon clipping requires a graphics device that
-      # supports alpha masking (e.g. ragg, Cairo PDF) — SVG/screen may vary.
-      pattern_grob
+      pattern_fn(bx, by, bw, bh, gp = base_gp, params = params)
     })
 
     grid::gTree(

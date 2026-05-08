@@ -58,7 +58,7 @@ fn(x, y, width, height, gp, params) → grid grob
 
 Where `x/y/width/height` are in **npc** units (0–1 relative to the parent viewport), `gp` is the base `gpar()` from the geom (carries `pattern_colour`, `pattern_linewidth`), and `params` is a named list of extra parameters from the scale (`pattern_angle`, `pattern_spacing`, `pattern_size`).
 
-Patterns render their content inside a clipped viewport via the `clipped_grob()` helper. `hatch_lines()` is a shared helper for line-based patterns (hatch, crosshatch, horizontal, vertical) that computes line positions via perpendicular-offset arithmetic across the unit square. Custom patterns are registered at runtime with `register_pattern(name, fn)`.
+Patterns render their content inside a clipped viewport via the `clipped_grob()` helper (clips to the bbox rectangle). `hatch_lines()` is a shared helper for line-based patterns (hatch, crosshatch, horizontal, vertical) that computes line positions via perpendicular-offset arithmetic across the unit square; when `poly_x`/`poly_y` are supplied it calls `clip_segments_to_poly()` to restrict lines to the polygon interior. `pip()` is a vectorised ray-casting point-in-polygon test used by `dots`. Custom patterns are registered at runtime with `register_pattern(name, fn)`.
 
 Built-in patterns: `none`, `hatch`, `crosshatch`, `horizontal`, `vertical`, `dots`, `weave`. Of these, only `hatch` and `crosshatch` currently honor `pattern_angle` — the others have fixed orientations by design (or by oversight; see ROADMAP).
 
@@ -67,7 +67,7 @@ Built-in patterns: `none`, `hatch`, `crosshatch`, `horizontal`, `vertical`, `dot
 Three geoms extend existing ggplot2 ggproto classes:
 
 - `GeomColPattern` / `GeomBarPattern` (`R/geom_col_pattern.R`) — extend **`GeomRect`** (not `GeomBar`). This is deliberate: ggplot2 4.0 restructured `GeomBar` to no longer expose a `draw_panel` method we can safely override. `GeomRect` draws filled rectangles from `xmin/xmax/ymin/ymax`, which is what bars become after the stat + position stack runs. `setup_data()` derives `xmin/xmax/ymin/ymax` from `x/y` for the bar case.
-- `GeomPolygonPattern` (`R/geom_polygon_pattern.R`) — extends `GeomPolygon`; clips the pattern grob to the polygon's bounding box (true shape clipping is a known limitation — see ROADMAP).
+- `GeomPolygonPattern` (`R/geom_polygon_pattern.R`) — extends `GeomPolygon`; clips the pattern to the exact polygon shape using device-independent in-R computation. Polygon vertices are normalised to 0–1 bbox-relative coordinates and passed to pattern functions as `params$poly_x` / `params$poly_y`. Line patterns use `clip_segments_to_poly()` (parametric intersection + ray-casting midpoint test, supports concave simple polygons); `dots` uses `pip()` directly to filter grid positions.
 
 `draw_panel()` renders each geometric primitive as a base rect/polygon grob plus a clipped pattern grob stacked in a `grobTree`.
 
@@ -83,12 +83,8 @@ The `draw_key_pattern()` function in `R/aaa_draw_key.R` (prefixed `aaa_` so it l
 
 ### Known Limitations (see ROADMAP.md)
 
-- Polygon clipping uses the bounding box, not the actual polygon shape (most visible on non-rectangular shapes like maps and triangles).
-- `pattern_angle` is only honored by `hatch` and `crosshatch`; `horizontal`, `vertical`, `dots`, `weave` ignore it.
+- `pattern_angle` is **intentionally** ignored by `horizontal`, `vertical`, `dots`, and `weave` — their names or composite structure define a fixed orientation. Only `hatch` and `crosshatch` rotate.
 - Legend key spacing uses a hardcoded 2.5× multiplier on `pattern_spacing`.
 - Per-row pattern parameter mapping (e.g. mapping `pattern_spacing` to a column) is untested.
 - Performance is O(n) grobs — can be slow for large datasets.
 
-## Repo Hygiene Note
-
-There is a stray empty directory at the repo root literally named `{R,man,tests` (with subdir `testthat}`) — a brace-expansion that got materialized as a literal path on Windows. Safe to delete.

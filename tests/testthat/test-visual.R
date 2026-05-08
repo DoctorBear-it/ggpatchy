@@ -112,6 +112,36 @@ test_that("geom_polygon_pattern dots renders correctly", {
   vdiffr::expect_doppelganger("polygon-pattern-dots-triangle", p)
 })
 
+test_that("geom_polygon_pattern hatch on concave L-shape renders correctly", {
+  df <- data.frame(
+    x     = c(0, 0, 0.5, 0.5, 1,   1),
+    y     = c(0, 1, 1,   0.5, 0.5, 0),
+    group = "L",
+    pat   = "hatch"
+  )
+  p <- ggplot(df, aes(x, y, group = group, fill = group, pattern = pat)) +
+    geom_polygon_pattern() +
+    scale_pattern_identity() +
+    scale_fill_brewer(palette = "Pastel1") +
+    theme_void()
+  vdiffr::expect_doppelganger("polygon-pattern-hatch-concave-L", p)
+})
+
+test_that("geom_polygon_pattern crosshatch on concave L-shape renders correctly", {
+  df <- data.frame(
+    x     = c(0, 0, 0.5, 0.5, 1,   1),
+    y     = c(0, 1, 1,   0.5, 0.5, 0),
+    group = "L",
+    pat   = "crosshatch"
+  )
+  p <- ggplot(df, aes(x, y, group = group, fill = group, pattern = pat)) +
+    geom_polygon_pattern() +
+    scale_pattern_identity() +
+    scale_fill_brewer(palette = "Pastel1") +
+    theme_void()
+  vdiffr::expect_doppelganger("polygon-pattern-crosshatch-concave-L", p)
+})
+
 # ---- scale functions -------------------------------------------------------
 
 test_that("scale_pattern_discrete cycles correctly", {

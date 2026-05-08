@@ -50,19 +50,75 @@ clipped_grob <- function(x, y, width, height, ...) {
   grid::gTree(children = do.call(grid::gList, children), vp = vp)
 }
 
+# Ray-casting point-in-polygon test. Works for convex and concave simple
+# (non-self-intersecting) polygons. px/py may be vectors.
+pip <- function(px, py, vx, vy) {
+  n <- length(vx)
+  inside <- logical(length(px))
+  j <- n
+  for (k in seq_len(n)) {
+    xi <- vx[k]; yi <- vy[k]
+    xj <- vx[j]; yj <- vy[j]
+    cross <- ((yi > py) != (yj > py)) &
+      (px < (xj - xi) * (py - yi) / (yj - yi) + xi)
+    inside <- xor(inside, cross)
+    j <- k
+  }
+  inside
+}
+
+# Clip line segments to a simple polygon (convex or concave, non-self-intersecting).
+# Finds all intersections of each segment with polygon edges, then uses a
+# midpoint PIP test to keep only sub-segments inside the polygon. A concave
+# polygon may produce multiple disjoint sub-segments from a single input line.
+# xs/ys: segment start coords; xe/ye: segment end coords (all same length).
+# Returns list(xs, ys, xe, ye) of clipped segments.
+clip_segments_to_poly <- function(xs, ys, xe, ye, vx, vy) {
+  n_edges <- length(vx)
+  out_xs <- out_ys <- out_xe <- out_ye <- numeric(0)
+
+  for (i in seq_along(xs)) {
+    x0 <- xs[i]; y0 <- ys[i]; x1 <- xe[i]; y1 <- ye[i]
+    dx <- x1 - x0; dy <- y1 - y0
+    ts <- c(0, 1)
+
+    for (k in seq_len(n_edges)) {
+      j <- if (k < n_edges) k + 1L else 1L
+      ex <- vx[j] - vx[k]; ey <- vy[j] - vy[k]
+      denom <- dy * ex - dx * ey
+      if (abs(denom) < 1e-10) next
+      t <- ((vy[k] - y0) * ex - (vx[k] - x0) * ey) / denom
+      u <- (dx * (vy[k] - y0) - dy * (vx[k] - x0)) / denom
+      if (t > 1e-10 && t < 1 - 1e-10 && u >= 0 && u <= 1)
+        ts <- c(ts, t)
+    }
+    ts <- sort(unique(ts))
+
+    for (m in seq_len(length(ts) - 1)) {
+      tm <- (ts[m] + ts[m + 1]) / 2
+      if (pip(x0 + tm * dx, y0 + tm * dy, vx, vy)) {
+        out_xs <- c(out_xs, x0 + ts[m]       * dx)
+        out_ys <- c(out_ys, y0 + ts[m]       * dy)
+        out_xe <- c(out_xe, x0 + ts[m + 1]   * dx)
+        out_ye <- c(out_ye, y0 + ts[m + 1]   * dy)
+      }
+    }
+  }
+  list(xs = out_xs, ys = out_ys, xe = out_xe, ye = out_ye)
+}
+
 # Generate hatch lines across a unit square, optionally at multiple angles.
-# Returns a polylineGrob (all lines as one grob for efficiency).
-hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
+# If poly_x/poly_y are supplied (polygon vertices in 0-1 npc coords matching
+# the bounding box), lines are clipped to the polygon before building the grob.
+# Returns a polylineGrob or nullGrob (if no segments survive clipping).
+hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
+                        poly_x = NULL, poly_y = NULL) {
   angle_rad <- angle_deg * pi / 180
-  # We generate lines long enough to cover the unit square at any angle.
-  # Strategy: sweep offsets perpendicular to the line direction.
   dx <- cos(angle_rad)
   dy <- sin(angle_rad)
-  # perpendicular direction
   px <- -dy
   py <-  dx
 
-  # How many lines do we need? At most sqrt(2) / spacing across the diagonal.
   n_lines <- ceiling(sqrt(2) / spacing_npc) + 2
   offsets <- seq(-n_lines, n_lines) * spacing_npc
 
@@ -70,7 +126,6 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
   for (i in seq_along(offsets)) {
     ox <- px * offsets[i]
     oy <- py * offsets[i]
-    # Line through (ox, oy) in direction (dx, dy), clipped to [-1,2] range
     t_vals <- c(
       if (abs(dx) > 1e-9) c((-1 - ox) / dx, (2 - ox) / dx) else c(-1e9, 1e9),
       if (abs(dy) > 1e-9) c((-1 - oy) / dy, (2 - oy) / dy) else c(-1e9, 1e9)
@@ -82,6 +137,14 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
     xe[i] <- ox + dx * t_max
     ye[i] <- oy + dy * t_max
   }
+
+  if (!is.null(poly_x)) {
+    clipped <- clip_segments_to_poly(xs, ys, xe, ye, poly_x, poly_y)
+    xs <- clipped$xs; ys <- clipped$ys
+    xe <- clipped$xe; ye <- clipped$ye
+  }
+
+  if (length(xs) == 0) return(grid::nullGrob())
 
   grid::polylineGrob(
     x = unit(c(rbind(xs, xe, NA)), "npc"),
@@ -107,7 +170,8 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
     clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = angle, spacing_npc = spacing, gp = line_gp)
+      hatch_lines(angle_deg = angle, spacing_npc = spacing, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
 
@@ -119,63 +183,75 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar()) {
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
     clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = angle,       spacing_npc = spacing, gp = line_gp),
-      hatch_lines(angle_deg = angle + 90,  spacing_npc = spacing, gp = line_gp)
+      hatch_lines(angle_deg = angle,      spacing_npc = spacing, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y),
+      hatch_lines(angle_deg = angle + 90, spacing_npc = spacing, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
 
-  # horizontal — flat lines
+  # horizontal — flat lines (angle fixed at 0°; name defines orientation)
   register_pattern("horizontal", function(x, y, width, height, gp, params) {
     spacing <- params$pattern_spacing %||% 0.08
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
     clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = 0, spacing_npc = spacing, gp = line_gp)
+      hatch_lines(angle_deg = 0, spacing_npc = spacing, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
 
-  # vertical — straight-up lines
+  # vertical — straight-up lines (angle fixed at 90°; name defines orientation)
   register_pattern("vertical", function(x, y, width, height, gp, params) {
     spacing <- params$pattern_spacing %||% 0.08
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
     clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = 90, spacing_npc = spacing, gp = line_gp)
+      hatch_lines(angle_deg = 90, spacing_npc = spacing, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
 
-  # dots — grid of small circles using circleGrob which respects viewports
+  # dots — grid of small circles; positions filtered to polygon interior when
+  # poly_x/poly_y are supplied.
   register_pattern("dots", function(x, y, width, height, gp, params) {
     spacing <- params$pattern_spacing %||% 0.1
-    size    <- params$pattern_size    %||% 0.35  # as fraction of spacing
-    dot_gp  <- grid::gpar(col = NA,
-                          fill = gp$pattern_colour %||% "black")
+    size    <- params$pattern_size    %||% 0.35
+    dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
     xs <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
     ys <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
-    grid_coords <- expand.grid(x = xs, y = ys)
-    # circleGrob with "snpc" units scales with the viewport correctly
+    gc <- expand.grid(x = xs, y = ys)
+    if (!is.null(params$poly_x)) {
+      keep <- pip(gc$x, gc$y, params$poly_x, params$poly_y)
+      gc <- gc[keep, , drop = FALSE]
+    }
+    if (nrow(gc) == 0) return(grid::nullGrob())
     clipped_grob(x, y, width, height,
       grid::circleGrob(
-        x = grid::unit(grid_coords$x, "npc"),
-        y = grid::unit(grid_coords$y, "npc"),
+        x = grid::unit(gc$x, "npc"),
+        y = grid::unit(gc$y, "npc"),
         r = grid::unit(size * spacing / 2, "snpc"),
         gp = dot_gp
       )
     )
   })
 
-  # weave — horizontal + diagonal for a woven look
+  # weave — horizontal + diagonal for a woven look (angles fixed; composite
+  # structure defines the pattern, not a single orientation angle)
   register_pattern("weave", function(x, y, width, height, gp, params) {
     spacing <- params$pattern_spacing %||% 0.07
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 0.8,
                           lty = "solid")
     clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg =  45, spacing_npc = spacing * 2, gp = line_gp),
-      hatch_lines(angle_deg = -45, spacing_npc = spacing * 2, gp = line_gp),
-      hatch_lines(angle_deg =  0,  spacing_npc = spacing,     gp = line_gp)
+      hatch_lines(angle_deg =  45, spacing_npc = spacing * 2, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y),
+      hatch_lines(angle_deg = -45, spacing_npc = spacing * 2, gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y),
+      hatch_lines(angle_deg =  0,  spacing_npc = spacing,     gp = line_gp,
+                  poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
 }

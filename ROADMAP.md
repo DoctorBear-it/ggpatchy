@@ -12,11 +12,9 @@ The package is small enough that one person can hold the whole thing in their he
 
 These are real, current limitations of the implementation. They aren't bugs — they're places where the code does something simpler than the user might expect.
 
-### `geom_polygon_pattern` only clips to the bounding box
+### Coordinate transforms beyond Cartesian aren't well-tested for polygons
 
-Patterns drawn over a polygon are clipped to the polygon's *axis-aligned bounding box*, not the polygon itself. For rectangular polygons (squares, ggplot2 default rectangles) this is invisible. For triangles, hexagons, country shapes, or anything non-rectangular, you'll see pattern elements (dots, hatch lines) appearing in the corners outside the actual fill. Image-search "ggpatchy polygon-pattern-dots-triangle" in the test snapshots to see what this looks like.
-
-True polygon clipping requires a graphics device that supports alpha masking via `grid::as.path()` — which means R ≥ 4.1.0 plus a backend like ragg, Cairo PDF, or modern SVG. The infrastructure exists; we haven't wired it up because doing it correctly across devices is its own project. See `R/geom_polygon_pattern.R` for where the comment lives in the source.
+`geom_polygon_pattern` clips patterns to the exact polygon shape using device-independent in-R computation (`clip_segments_to_poly` + `pip`). This works on all devices and R versions, but it only handles simple (non-self-intersecting) polygons. Winding-rule nuance for complex polygons is not addressed.
 
 ### Limited geom coverage
 
@@ -40,10 +38,6 @@ aes(pattern_spacing = density)  # tighter hatch where density is higher
 
 The plumbing supports it. We have not tested it, and no fixture exercises this path. Likely works for simple cases, may break in subtle ways (legend rendering, defaults, NA handling).
 
-### Pattern angle is only honored by hatch and crosshatch
-
-`pattern_angle` is consumed by the `hatch` and `crosshatch` patterns. The `horizontal`, `vertical`, `dots`, and `weave` patterns ignore it entirely. The fix is one line per pattern but introduces visual changes to existing fixtures — worth doing in a 0.2.0 with explicit visual review.
-
 ### Legends use a fudged spacing factor
 
 `R/aaa_draw_key.R` multiplies `pattern_spacing` by 2.5 in legend keys so the swatch isn't a dense blob. This means the legend swatch doesn't faithfully represent the pattern density used in the data area. A better approach would compute a target swatch-relative spacing instead of a global scale factor, but the current behavior is "good enough that nobody complains."
@@ -64,7 +58,6 @@ Loose priority order. Items closer to the top will land first.
 
 - Visual fixtures for `position = "dodge"` and faceted plots, to expose any bugs in those paths.
 - NA-in-pattern handling: warn and drop, matching ggplot2 convention.
-- `pattern_angle` honored by the directional patterns where it makes sense (`horizontal` and `vertical` could rotate; `dots` and `weave` don't have a meaningful single angle).
 - A vignette walking through the four most common use cases, written from inside RStudio against the installed package.
 
 ### Medium term (0.2.0 — new geoms, no breaking changes)
@@ -76,8 +69,7 @@ Loose priority order. Items closer to the top will land first.
 
 ### Longer term (0.3.0 — bigger lifts)
 
-- True polygon clipping using `grid::as.path()` on supporting devices, with graceful fallback to bounding-box clipping on devices that can't handle it.
-- `geom_sf_pattern` — depends on the polygon clipping fix being solid.
+- `geom_sf_pattern` — polygons clip correctly via `grid::as.path()` already; the remaining work is wiring up the sf coordinate transform.
 - Per-row mapping of pattern parameters: tested, with sensible legend defaults.
 
 ### Speculative (no commitment)
