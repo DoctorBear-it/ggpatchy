@@ -1,4 +1,10 @@
 /.pixi
 /man
 /pixi.lock
-/{R,man,tests
+/Rplots.pdf
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.claude/
+!.claude/settings.json
