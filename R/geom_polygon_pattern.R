@@ -104,11 +104,10 @@ GeomPolygonPattern <- ggplot2::ggproto(
 #' Polygons with pattern overlays
 #'
 #' A drop-in replacement for [ggplot2::geom_polygon()] that adds a `pattern`
-#' aesthetic. Patterns are correctly clipped to the polygon boundary.
-#'
-#' **Note**: Pattern clipping uses `grid::clipGrob()` with `grid::as.path()`,
-#' which requires R >= 4.1.0 and a graphics device that supports clipping paths
-#' (pdf, svg, ragg). On unsupported devices patterns will render without clipping.
+#' aesthetic. Patterns are correctly clipped to the polygon boundary using
+#' device-independent in-R geometry: line patterns via parametric
+#' segment-polygon intersection, dot patterns via ray-casting point-in-polygon.
+#' No special R version or device support is required.
 #'
 #' @param mapping Aesthetic mappings created by [ggplot2::aes()].
 #' @param data Data frame.
