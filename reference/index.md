@@ -8,11 +8,16 @@ counterparts.
 - [`geom_col_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
   [`geom_bar_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
   : Bar and column charts with pattern overlays
+- [`geom_rect_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+  [`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+  : Rectangle and tile charts with pattern overlays
 - [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
   : Polygons with pattern overlays
 - [`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
   [`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
   : Ribbon and area charts with pattern overlays
+- [`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+  : Kernel density estimates with pattern overlays
 - [`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
   : Violin plots with pattern overlays
 

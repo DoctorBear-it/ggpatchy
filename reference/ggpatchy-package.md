@@ -10,6 +10,8 @@ Useful links:
 
 - <https://github.com/DoctorBear-it/ggpatchy>
 
+- <https://doctorbear-it.github.io/ggpatchy>
+
 - Report bugs at <https://github.com/DoctorBear-it/ggpatchy/issues>
 
 ## Author
