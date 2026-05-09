@@ -14,6 +14,7 @@ cleanly via grid graphics.
 Useful links:
 \itemize{
   \item \url{https://github.com/DoctorBear-it/ggpatchy}
+  \item \url{https://doctorbear-it.github.io/ggpatchy}
   \item Report bugs at \url{https://github.com/DoctorBear-it/ggpatchy/issues}
 }
 

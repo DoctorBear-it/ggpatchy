@@ -26,17 +26,19 @@ draw_key_pattern <- function(data, params, size) {
   pattern_name <- warn_na_patterns(data$pattern %||% "none")
   pattern_fn   <- get_pattern_fn(pattern_name)
 
+  # null_na_default guards against both NULL (unmapped) and NA (mapped but
+  # missing in the legend key data row) for every pattern param.
   extra_gp <- grid::gpar(
-    pattern_colour    = data$pattern_colour    %||% "black",
-    pattern_linewidth = data$pattern_linewidth %||% 1
+    pattern_colour    = null_na_default(data$pattern_colour,    "black"),
+    pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 
-  # Use wider spacing in legend keys so patterns aren't a dense blob
+  # Use wider spacing in legend keys so patterns aren't a dense blob.
   legend_params <- list(
-    pattern_spacing   = (data$pattern_spacing   %||% 0.08) * 2.5,
-    pattern_angle     =  data$pattern_angle     %||% 45,
-    pattern_size      =  data$pattern_size      %||% 0.35,
-    pattern_linewidth =  data$pattern_linewidth %||% 1
+    pattern_spacing   = null_na_default(data$pattern_spacing,   0.08) * 2.5,
+    pattern_angle     = null_na_default(data$pattern_angle,     45),
+    pattern_size      = null_na_default(data$pattern_size,      0.35),
+    pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 
   overlay <- pattern_fn(

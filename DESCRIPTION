@@ -36,3 +36,14 @@ Config/testthat/edition: 3
 URL: https://github.com/DoctorBear-it/ggpatchy, https://doctorbear-it.github.io/ggpatchy
 BugReports: https://github.com/DoctorBear-it/ggpatchy/issues
 Config/roxygen2/version: 8.0.0
+Collate: 
+    'aaa_draw_key.R'
+    'geom_rect_pattern.R'
+    'geom_col_pattern.R'
+    'geom_ribbon_pattern.R'
+    'geom_density_pattern.R'
+    'geom_polygon_pattern.R'
+    'geom_violin_pattern.R'
+    'ggpatchy-package.R'
+    'patterns.R'
+    'scale_pattern.R'

@@ -35,6 +35,13 @@ get_pattern_fn <- function(name) {
   }
 }
 
+# Coalesce NULL *and* NA to a scalar default — used in draw_key_pattern
+# where mapped aesthetics (pattern_spacing etc.) may arrive as NA from the
+# scale rather than NULL.
+null_na_default <- function(x, default) {
+  if (is.null(x) || (length(x) == 1L && is.na(x))) default else x
+}
+
 # Replace NA values in a pattern vector with "none", warning once if any found.
 warn_na_patterns <- function(pattern_vec) {
   n_na <- sum(is.na(pattern_vec))
@@ -235,8 +242,13 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
     spacing <- params$pattern_spacing %||% 0.1
     size    <- params$pattern_size    %||% 0.35
     dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
-    xs <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
-    ys <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
+    # Center the grid symmetrically: seq() alone is asymmetric when 1/spacing
+    # is not an integer (e.g. spacing=0.08 gives left margin 0.04, right 0.08).
+    n   <- max(1L, floor(1 / spacing))
+    off <- (1 - n * spacing) / 2
+    pts <- off + spacing / 2 + (seq_len(n) - 1L) * spacing
+    xs  <- pts
+    ys  <- pts
     gc <- expand.grid(x = xs, y = ys)
     if (!is.null(params$poly_x)) {
       keep <- pip(gc$x, gc$y, params$poly_x, params$poly_y)

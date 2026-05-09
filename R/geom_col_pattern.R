@@ -3,16 +3,15 @@
 # geom_col_pattern() and geom_bar_pattern() — bar/col charts
 # with pattern overlays mapped to a variable.
 #
-# We inherit from GeomRect rather than GeomBar because ggplot2 4.0
-# restructured GeomBar to no longer expose a draw_panel method we
-# can safely override. GeomRect draws filled rectangles from
-# xmin/xmax/ymin/ymax, which is exactly what bars are after the
-# stat + position stack has run.
+# GeomColPattern extends GeomRectPattern (not GeomRect directly)
+# so that draw_panel is shared with geom_rect_pattern and
+# geom_tile_pattern.  Only setup_data differs: bars arrive with
+# x/y from stat + position, so we derive xmin/xmax/ymin/ymax here
+# before the shared draw_panel runs.
 # ------------------------------------------------------------
 
-#' @importFrom ggplot2 ggproto GeomRect GeomBar layer aes .pt
-#' @importFrom grid gTree gList unit gpar nullGrob rectGrob
-#' @importFrom scales alpha
+#' @include geom_rect_pattern.R
+#' @importFrom ggplot2 ggproto GeomRect layer aes
 NULL
 
 # ---- Core Geom -------------------------------------------------------------
@@ -23,42 +22,18 @@ NULL
 #' @export
 GeomColPattern <- ggplot2::ggproto(
   "GeomColPattern",
-  ggplot2::GeomRect,
+  GeomRectPattern,
 
-  # GeomRect requires ymin/ymax but we compute them in setup_data from y.
-  # Override required_aes so ggplot2 doesn't reject the data before setup_data runs.
+  # required_aes overrides GeomRect's alternative form because bars arrive
+  # with x/y (not xmin/xmax) and setup_data below converts them.
   required_aes = c("x", "y"),
 
-  # Declare the extra aesthetics this geom understands
-  aesthetics = function(self) {
-    c(
-      ggplot2::GeomRect$aesthetics(),
-      "pattern",
-      "pattern_colour",
-      "pattern_linewidth",
-      "pattern_spacing",
-      "pattern_angle",
-      "pattern_size"
-    )
-  },
+  # aesthetics and default_aes are inherited from GeomRectPattern unchanged.
 
-  default_aes = ggplot2::aes(
-    colour    = NA,
-    fill      = "grey35",
-    linewidth = 0.5,
-    linetype  = 1,
-    alpha     = NA,
-    pattern           = "none",
-    pattern_colour    = "black",
-    pattern_linewidth = 1,
-    pattern_spacing   = 0.08,
-    pattern_angle     = 45,
-    pattern_size      = 0.4
-  ),
-
-  # GeomRect$setup_data calls resolve_rect() which requires ymin/ymax already
-  # present. For the bar case (stat="count"), data arrives with just x/y,
-  # so we compute xmin/xmax/ymin/ymax ourselves before passing to GeomRect.
+  # GeomRectPattern (and GeomRect) expect xmin/xmax/ymin/ymax already present.
+  # For bars, data arrives with just x/y from stat + position, so derive the
+  # corners here.  The * 0.9 shrink gives bars a gap between them; without it
+  # adjacent bars would be flush (resolution() returns the grid spacing).
   setup_data = function(self, data, params) {
     if (!("xmin" %in% names(data))) {
       w <- params$width %||% (ggplot2::resolution(data$x, FALSE) * 0.9)
@@ -68,66 +43,7 @@ GeomColPattern <- ggplot2::ggproto(
       data$ymax <- pmax(data$y, 0)
     }
     data
-  },
-
-  draw_panel = function(self, data, panel_params, coord, ...) {
-    # Transform coordinates to npc [0,1] space
-    coords <- coord$transform(data, panel_params)
-
-    # Draw base filled rectangles directly — avoids ggproto dispatch issues
-    # with GeomRect$draw_panel(self, ...) in ggplot2 4.0
-    rect_grobs <- lapply(seq_len(nrow(coords)), function(i) {
-      row <- coords[i, ]
-      grid::rectGrob(
-        x      = row$xmin,
-        y      = row$ymin,
-        width  = row$xmax - row$xmin,
-        height = row$ymax - row$ymin,
-        just   = c("left", "bottom"),
-        gp     = grid::gpar(
-          col      = row$colour   %||% NA,
-          fill     = scales::alpha(row$fill %||% "grey35", row$alpha %||% NA),
-          lwd      = (row$linewidth %||% 0.5) * ggplot2::.pt,
-          lty      = row$linetype  %||% 1
-        )
-      )
-    })
-
-    # Warn once per panel if any pattern values are NA, then replace with "none".
-    coords$pattern <- warn_na_patterns(coords$pattern)
-
-    # Draw pattern overlays on top
-    pattern_grobs <- lapply(seq_len(nrow(coords)), function(i) {
-      row <- coords[i, ]
-
-      pattern_name <- row$pattern %||% "none"
-      if (pattern_name == "none") return(grid::nullGrob())
-
-      pattern_fn <- get_pattern_fn(pattern_name)
-
-      bar_w <- row$xmax - row$xmin
-      bar_h <- row$ymax - row$ymin
-      if (bar_w <= 0 || bar_h <= 0) return(grid::nullGrob())
-
-      base_gp <- grid::gpar(
-        pattern_colour    = row$pattern_colour    %||% "black",
-        pattern_linewidth = row$pattern_linewidth %||% 1
-      )
-      params <- list(
-        pattern_spacing = row$pattern_spacing %||% 0.08,
-        pattern_angle   = row$pattern_angle   %||% 45,
-        pattern_size    = row$pattern_size    %||% 0.4
-      )
-
-      pattern_fn(row$xmin, row$ymin, bar_w, bar_h, gp = base_gp, params = params)
-    })
-
-    grid::gTree(
-      children = do.call(grid::gList, c(rect_grobs, pattern_grobs))
-    )
-  },
-
-  draw_key = draw_key_pattern
+  }
 )
 
 # ---- User-facing layer functions -------------------------------------------

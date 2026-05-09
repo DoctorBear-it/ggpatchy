@@ -9,9 +9,12 @@ reference:
     contents:
       - geom_col_pattern
       - geom_bar_pattern
+      - geom_rect_pattern
+      - geom_tile_pattern
       - geom_polygon_pattern
       - geom_ribbon_pattern
       - geom_area_pattern
+      - geom_density_pattern
       - geom_violin_pattern
 
   - title: Scales
