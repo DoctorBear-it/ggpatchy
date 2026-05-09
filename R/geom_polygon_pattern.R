@@ -48,6 +48,7 @@ GeomPolygonPattern <- ggplot2::ggproto(
     if (n == 0) return(grid::nullGrob())
 
     coords <- coord$transform(data, panel_params)
+    coords$pattern <- warn_na_patterns(coords$pattern)
 
     # Draw base filled polygons directly — avoids ggproto dispatch issues
     # with GeomPolygon$draw_panel(self, ...) in ggplot2 4.0
@@ -68,7 +69,6 @@ GeomPolygonPattern <- ggplot2::ggproto(
 
     overlay_grobs <- lapply(groups, function(grp) {
       pattern_name <- grp$pattern[1] %||% "none"
-      if (is.na(pattern_name)) pattern_name <- "none"
       if (pattern_name == "none") return(grid::nullGrob())
 
       x_range <- range(grp$x, na.rm = TRUE)

@@ -1,0 +1,27 @@
+url: https://doctorbear-it.github.io/ggpatchy/
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: Geoms
+    desc: Pattern-enabled geom layers, drop-in replacements for their ggplot2 counterparts.
+    contents:
+      - geom_col_pattern
+      - geom_bar_pattern
+      - geom_polygon_pattern
+      - geom_ribbon_pattern
+      - geom_area_pattern
+      - geom_violin_pattern
+
+  - title: Scales
+    desc: Map discrete variables to patterns.
+    contents:
+      - scale_pattern_manual
+      - scale_pattern_discrete
+      - scale_pattern_identity
+
+  - title: Custom patterns
+    desc: Register your own pattern functions.
+    contents:
+      - register_pattern

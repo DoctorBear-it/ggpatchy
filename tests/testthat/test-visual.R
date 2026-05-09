@@ -175,6 +175,60 @@ test_that("scale_pattern_identity renders each value as itself", {
   vdiffr::expect_doppelganger("scale-identity-name-as-pattern", p)
 })
 
+# ---- position = "dodge" ---------------------------------------------------
+
+test_that("geom_col_pattern dodge renders correctly", {
+  df <- data.frame(
+    x       = c("X", "X", "Y", "Y"),
+    grp     = c("a", "b", "a", "b"),
+    pattern = c("hatch", "dots", "crosshatch", "vertical"),
+    value   = c(3, 2, 4, 1)
+  )
+  p <- ggplot(df, aes(x, value, fill = grp, pattern = pattern)) +
+    geom_col_pattern(position = "dodge") +
+    scale_pattern_identity(guide = "legend") +
+    scale_fill_brewer(palette = "Pastel1") +
+    theme_minimal()
+  vdiffr::expect_doppelganger("col-pattern-dodge", p)
+})
+
+# ---- faceted plots ---------------------------------------------------------
+
+test_that("geom_col_pattern faceted renders correctly", {
+  df <- data.frame(
+    group   = rep(c("A", "B", "C"), 2),
+    facet   = rep(c("F1", "F2"), each = 3),
+    value   = c(3, 5, 2, 4, 1, 6),
+    pattern = rep(c("hatch", "crosshatch", "dots"), 2)
+  )
+  p <- ggplot(df, aes(group, value, fill = group, pattern = pattern)) +
+    geom_col_pattern() +
+    scale_pattern_identity(guide = "legend") +
+    scale_fill_brewer(palette = "Pastel1") +
+    facet_wrap(~facet) +
+    theme_minimal()
+  vdiffr::expect_doppelganger("col-pattern-faceted", p)
+})
+
+test_that("geom_ribbon_pattern faceted renders correctly", {
+  x <- seq(0, 2 * pi, length.out = 30)
+  df <- rbind(
+    data.frame(x = x, ymin = sin(x) - 0.3, ymax = sin(x) + 0.3,
+               grp = "A", pattern = "hatch"),
+    data.frame(x = x, ymin = cos(x) - 0.3, ymax = cos(x) + 0.3,
+               grp = "B", pattern = "crosshatch")
+  )
+  p <- ggplot(df, aes(x, ymin = ymin, ymax = ymax, fill = grp, pattern = pattern)) +
+    geom_ribbon_pattern(alpha = 0.6) +
+    scale_pattern_identity(guide = "legend") +
+    scale_fill_brewer(palette = "Pastel1") +
+    facet_wrap(~grp) +
+    theme_minimal()
+  vdiffr::expect_doppelganger("ribbon-pattern-faceted", p)
+})
+
+# ---- regression tests for the level-ordering bug --------------------------
+
 test_that("scale_pattern_manual respects names regardless of order", {
   # Pass values in a deliberately wrong order; named lookup should still
   # produce the correct mapping (A=hatch, B=dots, C=weave, D=crosshatch).

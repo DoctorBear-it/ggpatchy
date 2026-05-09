@@ -69,3 +69,28 @@ test_that("geom_polygon_pattern builds without error", {
     geom_polygon_pattern()
   expect_no_error(ggplot_build(p))
 })
+
+test_that("NA in pattern column warns once per panel for geom_col_pattern", {
+  library(ggplot2)
+  df <- data.frame(
+    g = c("A", "B", "C"),
+    v = c(1, 2, 3),
+    pattern = c("hatch", NA, "dots")
+  )
+  p <- ggplot(df, aes(g, v, pattern = pattern)) +
+    geom_col_pattern()
+  expect_warning(ggplotGrob(p), "missing value")
+})
+
+test_that("NA in pattern column warns for geom_polygon_pattern", {
+  library(ggplot2)
+  df <- data.frame(
+    x = c(0, 1, 1, 0),
+    y = c(0, 0, 1, 1),
+    group = "sq",
+    pattern = NA_character_
+  )
+  p <- ggplot(df, aes(x, y, group = group, pattern = pattern)) +
+    geom_polygon_pattern()
+  expect_warning(ggplotGrob(p), "missing value")
+})

@@ -4,7 +4,7 @@ Where ggpatchy is now, what it doesn't do yet, and rough priority for what comes
 
 ## Current state (v0.2.0)
 
-Five geoms (`geom_col_pattern`, `geom_bar_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`), seven built-in patterns, three scales (`manual`, `identity`, `discrete`), a registration API for custom patterns, and visual regression tests. `R CMD check` is clean. A vignette covers all four user-facing geoms.
+Six geoms (`geom_col_pattern`, `geom_bar_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`, `geom_violin_pattern`), seven built-in patterns, three scales (`manual`, `identity`, `discrete`), a registration API for custom patterns, and visual regression tests. `R CMD check` is clean. A vignette covers the user-facing geoms.
 
 The package is small enough that one person can hold the whole thing in their head, which is the point.
 
@@ -20,7 +20,7 @@ These are real, current limitations of the implementation. They aren't bugs — 
 
 Implemented: `geom_col_pattern`, `geom_bar_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`.
 
-Not implemented: `geom_density_pattern`, `geom_violin_pattern`, `geom_boxplot_pattern`, `geom_tile_pattern`, `geom_rect_pattern`, `geom_sf_pattern`. Each is a small project; most reduce to "wrap an existing geom and add the pattern overlay step." `geom_rect_pattern` and `geom_tile_pattern` are the easiest. `geom_sf_pattern` is the most useful for real work but inherits the bounding-box-clipping limitation above.
+Not implemented: `geom_density_pattern`, `geom_boxplot_pattern`, `geom_tile_pattern`, `geom_rect_pattern`, `geom_sf_pattern`. Each is a small project; most reduce to "wrap an existing geom and add the pattern overlay step." `geom_rect_pattern` and `geom_tile_pattern` are the easiest. `geom_sf_pattern` is the most useful for real work but inherits the bounding-box-clipping limitation above.
 
 `geom_ribbon_pattern()` and `geom_area_pattern()` do not support `orientation = "y"` (horizontal ribbons). The base ribbon renders correctly; the pattern overlay is silently skipped. Document this as a known limitation rather than fixing it — the internal coordinate layout under `flipped_aes = TRUE` makes safe pattern reconstruction non-trivial.
 
@@ -58,14 +58,14 @@ Loose priority order. Items closer to the top will land first.
 
 ### Near term (0.2.x — small fixes, no API changes)
 
-- Visual fixtures for `position = "dodge"` and faceted plots, to expose any bugs in those paths.
-- NA-in-pattern handling: warn and drop, matching ggplot2 convention.
-- CI on GitHub Actions across Linux + macOS + Windows, R-release + R-devel.
-- pkgdown site at `https://doctorbear-it.github.io/ggpatchy/`.
+- ~~Visual fixtures for `position = "dodge"` and faceted plots~~ — done in v0.2.1.
+- ~~NA-in-pattern handling: warn and drop, matching ggplot2 convention~~ — done in v0.2.1.
+- ~~CI on GitHub Actions across Linux + macOS + Windows, R-release + R-devel~~ — done in v0.2.1.
+- ~~pkgdown site at `https://doctorbear-it.github.io/ggpatchy/`~~ — done in v0.2.1.
 
 ### Medium term (0.3.0 — new geoms, no breaking changes)
 
-- `geom_violin_pattern` — in progress. Plan: override `draw_group` on `GeomViolin`, reconstruct the violin outline polygon from the `coords` data frame, and feed it through `clip_segments_to_poly` / `pip`. See implementation session notes.
+- ~~`geom_violin_pattern`~~ — shipped in v0.2.0.
 - `geom_rect_pattern` and `geom_tile_pattern` — straightforward extensions, both rectangle-based.
 - `geom_sf_pattern` — polygons clip correctly via `grid::as.path()` already; the remaining work is wiring up the sf coordinate transform.
 - Per-row mapping of pattern parameters: tested, with sensible legend defaults.

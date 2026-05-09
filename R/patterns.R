@@ -35,6 +35,21 @@ get_pattern_fn <- function(name) {
   }
 }
 
+# Replace NA values in a pattern vector with "none", warning once if any found.
+warn_na_patterns <- function(pattern_vec) {
+  n_na <- sum(is.na(pattern_vec))
+  if (n_na > 0L) {
+    rlang::warn(paste0(
+      n_na,
+      if (n_na == 1L) " missing value in the `pattern` aesthetic was"
+      else            " missing values in the `pattern` aesthetic were",
+      " replaced with \"none\"."
+    ))
+    pattern_vec[is.na(pattern_vec)] <- "none"
+  }
+  pattern_vec
+}
+
 # ---- Helpers ---------------------------------------------------------------
 
 # Build a viewport clipped to a rectangle, run `expr`, pop it.

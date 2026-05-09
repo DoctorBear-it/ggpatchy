@@ -78,8 +78,7 @@ GeomViolinPattern <- ggplot2::ggproto(
       quantile_gp = quantile_gp, flipped_aes = flipped_aes
     )
 
-    pattern_name <- data$pattern[1] %||% "none"
-    if (is.na(pattern_name)) pattern_name <- "none"
+    pattern_name <- warn_na_patterns(data$pattern[1L] %||% "none")
     if (pattern_name == "none") return(base_grob)
 
     # Horizontal violins (flipped_aes = TRUE) are not supported for the

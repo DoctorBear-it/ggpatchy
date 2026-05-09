@@ -23,7 +23,7 @@ draw_key_pattern <- function(data, params, size) {
     )
   )
 
-  pattern_name <- data$pattern %||% "none"
+  pattern_name <- warn_na_patterns(data$pattern %||% "none")
   pattern_fn   <- get_pattern_fn(pattern_name)
 
   extra_gp <- grid::gpar(

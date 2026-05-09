@@ -93,12 +93,14 @@ GeomColPattern <- ggplot2::ggproto(
       )
     })
 
+    # Warn once per panel if any pattern values are NA, then replace with "none".
+    coords$pattern <- warn_na_patterns(coords$pattern)
+
     # Draw pattern overlays on top
     pattern_grobs <- lapply(seq_len(nrow(coords)), function(i) {
       row <- coords[i, ]
 
       pattern_name <- row$pattern %||% "none"
-      if (is.null(pattern_name) || is.na(pattern_name)) pattern_name <- "none"
       if (pattern_name == "none") return(grid::nullGrob())
 
       pattern_fn <- get_pattern_fn(pattern_name)
