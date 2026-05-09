@@ -1,0 +1,97 @@
+---
+title: "Design Philosophy"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design philosophy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This document records the design invariants that govern ggpatchy's internals.
+It is written for contributors, not users. If you are adding a pattern or
+modifying the rendering pipeline, read this first.
+
+## Coordinate system contract
+
+Every pattern parameter is **viewport-relative**. `pattern_spacing = 0.08`
+means 8% of the shape's bounding box — whether that shape is a bar, tile,
+polygon, sf geometry, violin, density curve, or a legend key swatch. No
+shape-specific scaling is applied at any layer.
+
+This is not magic. It follows directly from how grid viewports work.
+`clipped_grob()` creates a viewport sized to the bounding box and renders
+pattern grobs as children of that viewport. Inside the viewport, `unit(v,
+"npc")` resolves to `v * bounding_box_dimension`. So `spacing = 0.08` is
+8% of the bbox on every shape at every scale, automatically.
+
+The consequence: **if the legend swatch looks wrong, the pattern coordinate
+system is wrong.** Fix the coordinate system; do not adjust legend parameters
+as a workaround.
+
+## No fudge factors
+
+There must be no multipliers or offsets applied to pattern parameters
+specifically for the legend context. `draw_key_pattern` is a rendering path
+like any other — it calls the same pattern functions with the same parameter
+semantics, passing a 0.9 × 0.9 bounding box in key-npc space. If it needs
+special treatment, something upstream is broken.
+
+```r
+# WRONG — this was the 0.3.x legend fudge, now removed
+pattern_spacing = null_na_default(data$pattern_spacing, 0.08) * 2.5
+
+# CORRECT — pass through unchanged
+pattern_spacing = null_na_default(data$pattern_spacing, 0.08)
+```
+
+The history: the `* 2.5` fudge was introduced when spacing was panel-relative
+rather than viewport-relative. Patterns appeared as dense blobs in the tiny
+key because `spacing = 0.08` meant 8% of the full panel, not 8% of the key.
+The right fix was to make spacing viewport-relative; the multiplier was a
+symptom treatment that masked the disease. Once the coordinate system was
+corrected the multiplier became actively wrong — making legends 2.5× sparser
+than the data.
+
+## Visual contract with the user
+
+`pattern_spacing = 0.08` should look the same density in a legend key as it
+does in a bar. A user who sets `pattern_spacing = 0.2` for a sparse pattern
+should see a sparse legend. A user who sets `pattern_spacing = 0.04` for a
+dense pattern should see a dense legend. The legend communicates the actual
+parameter value.
+
+## Pattern functions are pure
+
+Pattern functions `fn(x, y, width, height, gp, params)` have no side effects
+and make no assumptions about rendering context beyond what is passed to them.
+They must not inspect global state, device dimensions, or parent viewport
+dimensions (beyond what grid's normal npc resolution provides).
+
+**`"snpc"` is banned.** `unit(v, "snpc")` resolves to a fraction of the
+shorter viewport dimension in device coordinates. This couples dot size to
+viewport aspect ratio: a tall narrow bar gets a different physical dot size
+than a short wide bar at the same `pattern_spacing`. Use `"npc"` instead.
+Dots will appear slightly elliptical on very non-square viewports — this is
+acceptable and consistent with how line spacing already behaves (line density
+is also anisotropic on non-square viewports in npc space).
+
+## Diagnostic checklist for legend rendering issues
+
+If the legend swatch looks wrong (too dense, too sparse, wrong angle, etc.),
+check in this order:
+
+1. **Is `pattern_spacing` viewport-relative in the pattern function?**
+   There must be no `bbox_scale`, no `sqrt(width * height)`, no division
+   by panel dimensions. If present, remove it.
+
+2. **Is `draw_key_pattern` passing `width = 0.9, height = 0.9`?**
+   It should be — verify that line 45 of `aaa_draw_key.R` still reads
+   `pattern_fn(x = 0.05, y = 0.05, width = 0.9, height = 0.9, ...)`.
+
+3. **Is there a multiplier on any param in `legend_params`?**
+   There must not be. Every param is passed through `null_na_default` and
+   nothing else.
+
+4. **Is the legend key itself sized correctly by ggplot2?**
+   Rarely the issue. Checkable with
+   `theme(legend.key.size = unit(1, "cm"))`.

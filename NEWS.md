@@ -1,3 +1,15 @@
+# ggpatchy 0.4.1
+
+## Improvements
+
+- Pattern spacing is now relative to each shape's bounding box rather than
+  the full panel. `pattern_spacing = 0.08` now means "8% of the shape's
+  bounding box" consistently across shapes of any size. Previously, small
+  shapes received sparse patterns and large shapes received dense ones with
+  the same spacing value.
+
+---
+
 # ggpatchy 0.4.0
 
 ## Breaking changes

@@ -33,9 +33,11 @@ draw_key_pattern <- function(data, params, size) {
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 
-  # Use wider spacing in legend keys so patterns aren't a dense blob.
+  # Legend key passes pattern params through unchanged — spacing is
+  # viewport-relative so the swatch naturally shows the correct density.
+  # No fudge factor needed or appropriate.
   legend_params <- list(
-    pattern_spacing   = null_na_default(data$pattern_spacing,   0.08) * 2.5,
+    pattern_spacing   = null_na_default(data$pattern_spacing,   0.08),
     pattern_angle     = null_na_default(data$pattern_angle,     45),
     pattern_size      = null_na_default(data$pattern_size,      0.35),
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)

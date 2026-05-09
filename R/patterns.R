@@ -242,13 +242,9 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
     spacing <- params$pattern_spacing %||% 0.1
     size    <- params$pattern_size    %||% 0.35
     dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
-    # Center the grid symmetrically: seq() alone is asymmetric when 1/spacing
-    # is not an integer (e.g. spacing=0.08 gives left margin 0.04, right 0.08).
-    n   <- max(1L, floor(1 / spacing))
-    off <- (1 - n * spacing) / 2
-    pts <- off + spacing / 2 + (seq_len(n) - 1L) * spacing
-    xs  <- pts
-    ys  <- pts
+    xs <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
+    ys <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
+    if (length(xs) == 0 || length(ys) == 0) return(grid::nullGrob())
     gc <- expand.grid(x = xs, y = ys)
     if (!is.null(params$poly_x)) {
       keep <- pip(gc$x, gc$y, params$poly_x, params$poly_y)
@@ -259,7 +255,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
       grid::circleGrob(
         x = grid::unit(gc$x, "npc"),
         y = grid::unit(gc$y, "npc"),
-        r = grid::unit(size * spacing / 2, "snpc"),
+        r = grid::unit(size * spacing / 2, "npc"),
         gp = dot_gp
       )
     )
@@ -277,7 +273,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
                   poly_x = params$poly_x, poly_y = params$poly_y),
       hatch_lines(angle_deg = -45, spacing_npc = spacing * 2, gp = line_gp,
                   poly_x = params$poly_x, poly_y = params$poly_y),
-      hatch_lines(angle_deg =  0,  spacing_npc = spacing,     gp = line_gp,
+      hatch_lines(angle_deg =   0, spacing_npc = spacing,     gp = line_gp,
                   poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })

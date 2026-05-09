@@ -60,14 +60,14 @@ list_patterns()  # see all registered patterns
 
 ## Pattern aesthetics
 
-| Aesthetic           | Controls                         | Default   |
-|---------------------|----------------------------------|-----------|
-| `pattern`           | Pattern name                     | `"none"`  |
-| `pattern_colour`    | Line/dot colour                  | `"black"` |
-| `pattern_linewidth` | Line width (line patterns)       | `1`       |
-| `pattern_spacing`   | Spacing (npc fraction)           | `0.08`    |
-| `pattern_angle`     | Angle in degrees (hatch)         | `45`      |
-| `pattern_size`      | Dot size in mm (dots pattern)    | `0.4`     |
+| Aesthetic           | Controls                                    | Default   |
+|---------------------|---------------------------------------------|-----------|
+| `pattern`           | Pattern name                                | `"none"`  |
+| `pattern_colour`    | Line/dot colour                             | `"black"` |
+| `pattern_linewidth` | Line width (line patterns)                  | `1`       |
+| `pattern_spacing`   | Spacing as fraction of shape's bounding box | `0.08`    |
+| `pattern_angle`     | Angle in degrees (`hatch`/`crosshatch`)     | `45`      |
+| `pattern_size`      | Dot size relative to spacing (`dots`)       | `0.35`    |
 
 ## Scales
 
@@ -120,6 +120,13 @@ ggplot(df, aes(group, value, fill = group, pattern = group)) +
 - `geom_col_pattern()` — columns (`stat = "identity"`)
 - `geom_bar_pattern()` — bars (`stat = "count"`)
 - `geom_polygon_pattern()` — arbitrary polygons with path-clipped patterns
+- `geom_ribbon_pattern()` — ribbons and confidence bands
+- `geom_area_pattern()` — filled area charts (stacks supported)
+- `geom_violin_pattern()` — violin plots
+- `geom_density_pattern()` — smooth density estimates
+- `geom_rect_pattern()` — rectangles from `xmin/xmax/ymin/ymax`
+- `geom_tile_pattern()` — tiles from centre coordinates
+- `geom_sf_pattern()` — sf POLYGON / MULTIPOLYGON geometries (requires **sf**)
 
 ## Why not ggpattern?
 

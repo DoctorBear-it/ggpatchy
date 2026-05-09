@@ -1,6 +1,6 @@
 Package: ggpatchy
 Title: Pattern Fill Overlays for 'ggplot2' Geoms
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: 
     person(
       given   = "Timothy",

@@ -2,13 +2,31 @@
 
 Where ggpatchy is now, what it doesn't do yet, and rough priority for what comes next. This is a planning doc — items here are not promises.
 
-## Current state (v0.3.0)
+## Current state (v0.4.1)
 
-Nine geoms (`geom_col_pattern`, `geom_bar_pattern`, `geom_rect_pattern`, `geom_tile_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`, `geom_density_pattern`, `geom_violin_pattern`, `geom_sf_pattern`), seven built-in patterns, three scales (`manual`, `identity`, `discrete`), a registration API for custom patterns, and visual regression tests. `R CMD check` is clean. A vignette covers the user-facing geoms.
+Ten geoms (`geom_col_pattern`, `geom_bar_pattern`, `geom_rect_pattern`,
+`geom_tile_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`,
+`geom_area_pattern`, `geom_density_pattern`, `geom_violin_pattern`,
+`geom_sf_pattern`), seven built-in patterns, three scales (`manual`,
+`identity`, `discrete`), a registration API for custom patterns, and visual
+regression tests. `R CMD check` is clean. Two vignettes cover the user-facing
+geoms and choropleth mapping.
 
-`geom_sf_pattern` requires the `sf` package (listed in `Suggests`). It supports POLYGON and MULTIPOLYGON geometries; GEOMETRYCOLLECTION produces a warning; LINESTRING and POINT render via the base geom without pattern overlays.
+`geom_sf_pattern` requires the `sf` package (listed in `Suggests`). It
+supports POLYGON and MULTIPOLYGON geometries; GEOMETRYCOLLECTION produces a
+warning; LINESTRING and POINT render via the base geom without pattern
+overlays.
 
-The package is small enough that one person can hold the whole thing in their head, which is the point.
+On R ≥ 4.1 with a supporting device (ragg, Cairo PDF, SVG), polygon and sf
+patterns are clipped to the exact polygon boundary via the native graphics
+engine clip path API. On older R the fallback is bounding-box clipping.
+
+Pattern spacing is bounding-box relative: `pattern_spacing = 0.08` means 8%
+of the shape's bounding box across all geoms and all shape sizes, so visual
+density is consistent.
+
+The package is small enough that one person can hold the whole thing in their
+head, which is the point.
 
 ## Known limitations
 
@@ -18,29 +36,20 @@ These are real, current limitations of the implementation. They aren't bugs — 
 
 `geom_polygon_pattern` clips patterns to the exact polygon shape using device-independent in-R computation (`clip_segments_to_poly` + `pip`). This works on all devices and R versions, but it only handles simple (non-self-intersecting) polygons. Winding-rule nuance for complex polygons is not addressed.
 
-### Limited geom coverage
+### `orientation = "y"` not supported for ribbon/area/violin
 
-Implemented: `geom_col_pattern`, `geom_bar_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`.
-
-Not implemented: `geom_density_pattern`, `geom_boxplot_pattern`, `geom_tile_pattern`, `geom_rect_pattern`, `geom_sf_pattern`. Each is a small project; most reduce to "wrap an existing geom and add the pattern overlay step." `geom_rect_pattern` and `geom_tile_pattern` are the easiest. `geom_sf_pattern` is the most useful for real work but inherits the bounding-box-clipping limitation above.
-
-`geom_ribbon_pattern()` and `geom_area_pattern()` do not support `orientation = "y"` (horizontal ribbons). The base ribbon renders correctly; the pattern overlay is silently skipped. Document this as a known limitation rather than fixing it — the internal coordinate layout under `flipped_aes = TRUE` makes safe pattern reconstruction non-trivial.
+`geom_ribbon_pattern()`, `geom_area_pattern()`, and `geom_violin_pattern()`
+do not support `orientation = "y"` (horizontal orientation). The base shape
+renders correctly; the pattern overlay is silently skipped. The internal
+coordinate layout under `flipped_aes = TRUE` makes safe pattern
+reconstruction non-trivial. Use `coord_flip()` on a vertical geom as a
+workaround.
 
 ### Coordinate transforms beyond Cartesian aren't tested
 
 The geoms call `coord$transform(data, panel_params)` and then draw patterns in screen npc space. `coord_cartesian` works. `coord_flip` probably works. `coord_polar`, `coord_sf`, `coord_map`, and free coordinate systems will produce surprising output because the pattern is drawn in screen space, not data space — a hatch on a pie slice will be straight diagonal lines in screen pixels, not following the slice's curvature.
 
 Whether "screen-space patterns under polar coords" is a bug or a feature depends on what you want. Some users will want curved hatching; most will want screen-space lines because that's how patterns work in print.
-
-### Per-row pattern parameter mapping is untested
-
-The geom reads `pattern_spacing`, `pattern_angle`, `pattern_size` per data row, which means in principle you can map them like aesthetics:
-
-```r
-aes(pattern_spacing = density)  # tighter hatch where density is higher
-```
-
-The plumbing supports it. We have not tested it, and no fixture exercises this path. Likely works for simple cases, may break in subtle ways (legend rendering, defaults, NA handling).
 
 ### Legends use a fudged spacing factor
 
@@ -73,9 +82,18 @@ Loose priority order. Items closer to the top will land first.
 - ~~`geom_sf_pattern`~~ — shipped in v0.3.0.
 - ~~Per-row mapping of pattern parameters: tested, with sensible legend defaults.~~ — shipped in v0.3.0.
 
+### 0.4.x — clip paths and consistent spacing
+
+- ~~True polygon clip paths via R 4.1 graphics engine (`geom_polygon_pattern`,
+  `geom_sf_pattern`); bounding-box fallback on older R.~~ — shipped in v0.4.0.
+- ~~Bounding-box-relative pattern spacing: `pattern_spacing` is now a fraction
+  of each shape's bbox, not the panel, so visual density is consistent across
+  shapes of any size.~~ — shipped in v0.4.1.
+
 ### Speculative (no commitment)
 
-- `geom_boxplot_pattern`, `geom_density_pattern` — each requires deciding what "pattern" means for a non-rectangular shape with internal structure.
+- `geom_boxplot_pattern` — requires deciding what "pattern" means for a shape
+  with internal structure (whiskers, outlier points).
 - `coord_polar` support (curved hatch lines in polar plots) — a real research project.
 - Performance optimization for large datasets — only worth doing if someone reports it as a real problem.
 - A "texture from image" pattern type that loads a small bitmap. Adds dependencies, so probably never.
