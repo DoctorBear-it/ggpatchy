@@ -89,6 +89,99 @@ pip <- function(px, py, vx, vy) {
   inside
 }
 
+# Inset a simple polygon by distance r (in the same coordinate units as
+# vx/vy) using proper edge offsetting. Each edge is moved inward by r
+# perpendicular to its direction; adjacent offset edges are intersected
+# to find new vertices. This guarantees every point on every inset edge
+# is exactly r from the original edge — unlike centroid-based shrinking,
+# which over-insets at corners and under-insets at edge midpoints.
+#
+# Assumes a simple (non-self-intersecting) polygon. Works for both convex
+# and mildly concave polygons; may produce a degenerate result for very
+# concave polygons with r larger than the polygon's inradius, in which
+# case the original polygon is returned (fallback, no crash).
+#
+# The winding direction is auto-detected: the signed area determines
+# whether "inward" means +90° or -90° rotation of the edge normal.
+inset_poly <- function(vx, vy, r) {
+  n <- length(vx)
+  if (n < 3L || r <= 0) return(list(x = vx, y = vy))
+
+  # Signed area via shoelace — positive = CCW, negative = CW
+  signed_area <- sum(vx * c(vy[-1], vy[1]) - c(vx[-1], vx[1]) * vy) / 2
+  # For CCW winding, inward normal is +90° from edge direction (left normal)
+  # For CW winding, inward normal is -90° from edge direction (right normal)
+  normal_sign <- if (signed_area > 0) 1 else -1
+
+  # Compute offset lines for each edge.
+  # Each edge i goes from vertex i to vertex i+1 (mod n).
+  # The offset line is the edge shifted inward by r.
+  ox <- numeric(n)  # point on offset line (x)
+  oy <- numeric(n)  # point on offset line (y)
+  ex <- numeric(n)  # edge direction (x), normalised
+  ey <- numeric(n)  # edge direction (y), normalised
+
+  for (i in seq_len(n)) {
+    j <- if (i < n) i + 1L else 1L
+    dx <- vx[j] - vx[i]
+    dy <- vy[j] - vy[i]
+    d  <- sqrt(dx^2 + dy^2)
+    if (d < 1e-10) {
+      ex[i] <- 0; ey[i] <- 0
+      ox[i] <- vx[i]; oy[i] <- vy[i]
+      next
+    }
+    # Unit edge direction
+    ux <- dx / d; uy <- dy / d
+    ex[i] <- ux; ey[i] <- uy
+    # Inward normal: rotate edge direction by normal_sign * 90°
+    nx <- -uy * normal_sign
+    ny <-  ux * normal_sign
+    # A point on the offset line (shift midpoint of edge inward by r)
+    mx <- (vx[i] + vx[j]) / 2 + nx * r
+    my <- (vy[i] + vy[j]) / 2 + ny * r
+    ox[i] <- mx; oy[i] <- my
+  }
+
+  # Intersect adjacent offset lines to find inset vertices.
+  # Offset line i: passes through (ox[i], oy[i]) with direction (ex[i], ey[i])
+  # Offset line for edge i-1 (previous): intersect with edge i's offset line
+  vx_in <- numeric(n)
+  vy_in <- numeric(n)
+
+  for (i in seq_len(n)) {
+    prev <- if (i > 1L) i - 1L else n
+
+    # Line A: previous offset edge (direction ex[prev], ey[prev])
+    # Line B: current offset edge  (direction ex[i],    ey[i])
+    # Solve for intersection using 2D line intersection formula
+    ax <- ox[prev]; ay <- oy[prev]; adx <- ex[prev]; ady <- ey[prev]
+    bx <- ox[i];    by <- oy[i];    bdx <- ex[i];    bdy <- ey[i]
+
+    denom <- adx * bdy - ady * bdx
+    if (abs(denom) < 1e-10) {
+      # Parallel edges — use midpoint of offset points as fallback
+      vx_in[i] <- (ax + bx) / 2
+      vy_in[i] <- (ay + by) / 2
+    } else {
+      t <- ((bx - ax) * bdy - (by - ay) * bdx) / denom
+      vx_in[i] <- ax + t * adx
+      vy_in[i] <- ay + t * ady
+    }
+  }
+
+  # Sanity check: if inset polygon has collapsed or inverted (r too large),
+  # return original polygon rather than a degenerate result.
+  inset_area <- abs(sum(vx_in * c(vy_in[-1], vy_in[1]) -
+                          c(vx_in[-1], vx_in[1]) * vy_in) / 2)
+  orig_area  <- abs(signed_area)
+  if (inset_area < 1e-10 || inset_area > orig_area) {
+    return(list(x = vx, y = vy))
+  }
+
+  list(x = vx_in, y = vy_in)
+}
+
 # Clip line segments to a simple polygon (convex or concave, non-self-intersecting).
 # Finds all intersections of each segment with polygon edges, then uses a
 # midpoint PIP test to keep only sub-segments inside the polygon. A concave
@@ -243,6 +336,10 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
     size    <- params$pattern_size    %||% 0.35
     dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
 
+    # Dot radius in viewport-relative npc — used for both the circle size and
+    # the inset margin when filtering to polygon interior.
+    r_npc <- size * spacing / 2
+
     # Centre the dot grid symmetrically in [0, 1].
     # seq(spacing/2, 1-spacing/2, by=spacing) anchors the first dot at the
     # near edge but leaves a larger remainder gap at the far edge when spacing
@@ -256,15 +353,29 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
     if (length(xs) == 0 || length(ys) == 0) return(grid::nullGrob())
     gc <- expand.grid(x = xs, y = ys)
     if (!is.null(params$poly_x)) {
-      keep <- pip(gc$x, gc$y, params$poly_x, params$poly_y)
-      gc   <- gc[keep, , drop = FALSE]
+      px <- params$poly_x
+      py <- params$poly_y
+      n  <- length(px)
+      # Strip closing duplicate vertex (sf closed rings repeat the first
+      # vertex at the end). inset_poly produces bad results for zero-length
+      # edges; pip handles open polygons correctly without it.
+      if (n > 1 && abs(px[n] - px[1]) < 1e-10 && abs(py[n] - py[1]) < 1e-10) {
+        px <- px[-n]
+        py <- py[-n]
+      }
+      # Inset the polygon by the dot radius before pip filtering so that no
+      # dot centre is close enough to the boundary that its radius bleeds
+      # outside (or appears as a partial circle on geoms with clip paths).
+      inset <- inset_poly(px, py, r_npc)
+      keep  <- pip(gc$x, gc$y, inset$x, inset$y)
+      gc    <- gc[keep, , drop = FALSE]
     }
     if (nrow(gc) == 0) return(grid::nullGrob())
     clipped_grob(x, y, width, height,
       grid::circleGrob(
         x  = grid::unit(gc$x, "npc"),
         y  = grid::unit(gc$y, "npc"),
-        r  = grid::unit(size * spacing / 2, "snpc"),
+        r  = grid::unit(r_npc, "npc"),
         gp = dot_gp
       )
     )
