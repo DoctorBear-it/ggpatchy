@@ -20,6 +20,8 @@ counterparts.
   : Kernel density estimates with pattern overlays
 - [`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
   : Violin plots with pattern overlays
+- [`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+  : SF polygon maps with pattern overlays
 
 ## Scales
 

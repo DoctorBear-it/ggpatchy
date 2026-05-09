@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,6 +17,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="articles/ggpatchy.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json"></form></li>
@@ -37,8 +38,9 @@
 
 <p>Where ggpatchy is now, what it doesn’t do yet, and rough priority for what comes next. This is a planning doc — items here are not promises.</p>
 <div class="section level2">
-<h2 id="current-state-v020">Current state (v0.2.0)<a class="anchor" aria-label="anchor" href="#current-state-v020"></a></h2>
-<p>Six geoms (<code>geom_col_pattern</code>, <code>geom_bar_pattern</code>, <code>geom_polygon_pattern</code>, <code>geom_ribbon_pattern</code>, <code>geom_area_pattern</code>, <code>geom_violin_pattern</code>), seven built-in patterns, three scales (<code>manual</code>, <code>identity</code>, <code>discrete</code>), a registration API for custom patterns, and visual regression tests. <code>R CMD check</code> is clean. A vignette covers the user-facing geoms.</p>
+<h2 id="current-state-v030">Current state (v0.3.0)<a class="anchor" aria-label="anchor" href="#current-state-v030"></a></h2>
+<p>Nine geoms (<code>geom_col_pattern</code>, <code>geom_bar_pattern</code>, <code>geom_rect_pattern</code>, <code>geom_tile_pattern</code>, <code>geom_polygon_pattern</code>, <code>geom_ribbon_pattern</code>, <code>geom_area_pattern</code>, <code>geom_density_pattern</code>, <code>geom_violin_pattern</code>, <code>geom_sf_pattern</code>), seven built-in patterns, three scales (<code>manual</code>, <code>identity</code>, <code>discrete</code>), a registration API for custom patterns, and visual regression tests. <code>R CMD check</code> is clean. A vignette covers the user-facing geoms.</p>
+<p><code>geom_sf_pattern</code> requires the <code>sf</code> package (listed in <code>Suggests</code>). It supports POLYGON and MULTIPOLYGON geometries; GEOMETRYCOLLECTION produces a warning; LINESTRING and POINT render via the base geom without pattern overlays.</p>
 <p>The package is small enough that one person can hold the whole thing in their head, which is the point.</p>
 </div>
 <div class="section level2">
@@ -71,8 +73,8 @@
 <p><code>R/aaa_draw_key.R</code> multiplies <code>pattern_spacing</code> by 2.5 in legend keys so the swatch isn’t a dense blob. This means the legend swatch doesn’t faithfully represent the pattern density used in the data area. A better approach would compute a target swatch-relative spacing instead of a global scale factor, but the current behavior is “good enough that nobody complains.”</p>
 </div>
 <div class="section level3">
-<h3 id="na-in-the-pattern-column-silently-becomes-none">NA in the pattern column silently becomes “none”<a class="anchor" aria-label="anchor" href="#na-in-the-pattern-column-silently-becomes-none"></a></h3>
-<p>If your pattern variable contains NA, that row gets <code>"none"</code> (no overlay) without warning. ggplot2’s convention for unmapped aesthetics is to drop the row with a warning. We should match that. Low priority.</p>
+<h3 id="na-in-the-pattern-column-becomes-none-with-a-warning">NA in the pattern column becomes “none” with a warning<a class="anchor" aria-label="anchor" href="#na-in-the-pattern-column-becomes-none-with-a-warning"></a></h3>
+<p>If your pattern variable contains NA, that row gets <code>"none"</code> (no overlay) and a warning is emitted once per draw call. This is the current behaviour as of v0.3.0.</p>
 </div>
 <div class="section level3">
 <h3 id="performance-is-per-row">Performance is per-row<a class="anchor" aria-label="anchor" href="#performance-is-per-row"></a></h3>
@@ -98,10 +100,13 @@
 <ul><li>
 <del><code>geom_violin_pattern</code></del> — shipped in v0.2.0.</li>
 <li>
-<code>geom_rect_pattern</code> and <code>geom_tile_pattern</code> — straightforward extensions, both rectangle-based.</li>
+<del><code>geom_rect_pattern</code> and <code>geom_tile_pattern</code></del> — shipped in v0.3.0.</li>
 <li>
-<code>geom_sf_pattern</code> — polygons clip correctly via <code><a href="https://rdrr.io/r/grid/grid.stroke.html" class="external-link">grid::as.path()</a></code> already; the remaining work is wiring up the sf coordinate transform.</li>
-<li>Per-row mapping of pattern parameters: tested, with sensible legend defaults.</li>
+<del><code>geom_density_pattern</code></del> — shipped in v0.3.0.</li>
+<li>
+<del><code>geom_sf_pattern</code></del> — shipped in v0.3.0.</li>
+<li>
+<del>Per-row mapping of pattern parameters: tested, with sensible legend defaults.</del> — shipped in v0.3.0.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="speculative-no-commitment">Speculative (no commitment)<a class="anchor" aria-label="anchor" href="#speculative-no-commitment"></a></h3>

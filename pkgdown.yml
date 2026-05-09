@@ -3,7 +3,8 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   ggpatchy: ggpatchy.html
-last_built: 2026-05-09T04:44Z
+  mapping-with-patterns: mapping-with-patterns.html
+last_built: 2026-05-09T06:16Z
 urls:
   reference: https://doctorbear-it.github.io/ggpatchy/reference
   article: https://doctorbear-it.github.io/ggpatchy/articles

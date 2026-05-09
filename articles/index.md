@@ -1,6 +1,6 @@
 # Articles
 
-### All vignettes
+### Articles
 
-- [Getting Started with
-  ggpatchy](https://doctorbear-it.github.io/ggpatchy/articles/ggpatchy.md):
+- [Mapping with
+  Patterns](https://doctorbear-it.github.io/ggpatchy/articles/mapping-with-patterns.md):

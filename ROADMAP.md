@@ -3,14 +3,20 @@
 Where ggpatchy is now, what it doesn’t do yet, and rough priority for
 what comes next. This is a planning doc — items here are not promises.
 
-## Current state (v0.2.0)
+## Current state (v0.3.0)
 
-Six geoms (`geom_col_pattern`, `geom_bar_pattern`,
-`geom_polygon_pattern`, `geom_ribbon_pattern`, `geom_area_pattern`,
-`geom_violin_pattern`), seven built-in patterns, three scales (`manual`,
+Nine geoms (`geom_col_pattern`, `geom_bar_pattern`, `geom_rect_pattern`,
+`geom_tile_pattern`, `geom_polygon_pattern`, `geom_ribbon_pattern`,
+`geom_area_pattern`, `geom_density_pattern`, `geom_violin_pattern`,
+`geom_sf_pattern`), seven built-in patterns, three scales (`manual`,
 `identity`, `discrete`), a registration API for custom patterns, and
 visual regression tests. `R CMD check` is clean. A vignette covers the
 user-facing geoms.
+
+`geom_sf_pattern` requires the `sf` package (listed in `Suggests`). It
+supports POLYGON and MULTIPOLYGON geometries; GEOMETRYCOLLECTION
+produces a warning; LINESTRING and POINT render via the base geom
+without pattern overlays.
 
 The package is small enough that one person can hold the whole thing in
 their head, which is the point.
@@ -87,11 +93,11 @@ approach would compute a target swatch-relative spacing instead of a
 global scale factor, but the current behavior is “good enough that
 nobody complains.”
 
-### NA in the pattern column silently becomes “none”
+### NA in the pattern column becomes “none” with a warning
 
 If your pattern variable contains NA, that row gets `"none"` (no
-overlay) without warning. ggplot2’s convention for unmapped aesthetics
-is to drop the row with a warning. We should match that. Low priority.
+overlay) and a warning is emitted once per draw call. This is the
+current behaviour as of v0.3.0.
 
 ### Performance is per-row
 
@@ -118,13 +124,11 @@ Loose priority order. Items closer to the top will land first.
 ### Medium term (0.3.0 — new geoms, no breaking changes)
 
 - ~~`geom_violin_pattern`~~ — shipped in v0.2.0.
-- `geom_rect_pattern` and `geom_tile_pattern` — straightforward
-  extensions, both rectangle-based.
-- `geom_sf_pattern` — polygons clip correctly via
-  [`grid::as.path()`](https://rdrr.io/r/grid/grid.stroke.html) already;
-  the remaining work is wiring up the sf coordinate transform.
-- Per-row mapping of pattern parameters: tested, with sensible legend
-  defaults.
+- ~~`geom_rect_pattern` and `geom_tile_pattern`~~ — shipped in v0.3.0.
+- ~~`geom_density_pattern`~~ — shipped in v0.3.0.
+- ~~`geom_sf_pattern`~~ — shipped in v0.3.0.
+- ~~Per-row mapping of pattern parameters: tested, with sensible legend
+  defaults.~~ — shipped in v0.3.0.
 
 ### Speculative (no commitment)
 
