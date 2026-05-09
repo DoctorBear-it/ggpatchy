@@ -24,41 +24,35 @@ pattern grobs as children of that viewport. Inside the viewport, `unit(v,
 "npc")` resolves to `v * bounding_box_dimension`. So `spacing = 0.08` is
 8% of the bbox on every shape at every scale, automatically.
 
-The consequence: **if the legend swatch looks wrong, the pattern coordinate
-system is wrong.** Fix the coordinate system; do not adjust legend parameters
-as a workaround.
+The consequence for data shapes: pattern spacing is consistent across all
+shape types and sizes. The legend key is a deliberate exception — see below.
 
-## No fudge factors
+## Legend key spacing is geometry-derived, not data-derived
 
-There must be no multipliers or offsets applied to pattern parameters
-specifically for the legend context. `draw_key_pattern` is a rendering path
-like any other — it calls the same pattern functions with the same parameter
-semantics, passing a 0.9 × 0.9 bounding box in key-npc space. If it needs
-special treatment, something upstream is broken.
+The legend key communicates pattern *identity* — what type of pattern is
+this? — not pattern *density*. A sparse hatch (`pattern_spacing = 0.2`)
+and a dense hatch (`pattern_spacing = 0.04`) both show hatch lines in the
+legend swatch. The number of lines is standardised to approximately 3
+repetitions across the swatch, computed from the swatch geometry:
 
 ```r
-# WRONG — this was the 0.3.x legend fudge, now removed
-pattern_spacing = null_na_default(data$pattern_spacing, 0.08) * 2.5
-
-# CORRECT — pass through unchanged
-pattern_spacing = null_na_default(data$pattern_spacing, 0.08)
+TARGET_REPS    <- 3L
+swatch_npc     <- 0.9   # swatch fills 90% of the key
+legend_spacing <- swatch_npc / TARGET_REPS   # = 0.3
 ```
 
-The history: the `* 2.5` fudge was introduced when spacing was panel-relative
-rather than viewport-relative. Patterns appeared as dense blobs in the tiny
-key because `spacing = 0.08` meant 8% of the full panel, not 8% of the key.
-The right fix was to make spacing viewport-relative; the multiplier was a
-symptom treatment that masked the disease. Once the coordinate system was
-corrected the multiplier became actively wrong — making legends 2.5× sparser
-than the data.
+This is not a fudge factor — it is geometry. `legend_spacing` is derived
+from the swatch dimensions and a transparent design constant (`TARGET_REPS`)
+with a clear meaning: how many pattern repetitions appear in the legend key.
+The user's `pattern_spacing` value is intentionally not used in the legend
+because legend density is not a user-controlled variable. Dot radius
+(`pattern_size`) and angle (`pattern_angle`) are still passed through from
+user settings — those describe pattern *appearance*, not density.
 
-## Visual contract with the user
-
-`pattern_spacing = 0.08` should look the same density in a legend key as it
-does in a bar. A user who sets `pattern_spacing = 0.2` for a sparse pattern
-should see a sparse legend. A user who sets `pattern_spacing = 0.04` for a
-dense pattern should see a dense legend. The legend communicates the actual
-parameter value.
+**The rule:** pattern functions themselves must never adjust their parameters
+based on rendering context. Only `draw_key_pattern` may deviate from user
+parameters, only for `pattern_spacing`, and only with this geometry-derived
+value.
 
 ## Pattern functions are pure
 
@@ -67,13 +61,17 @@ and make no assumptions about rendering context beyond what is passed to them.
 They must not inspect global state, device dimensions, or parent viewport
 dimensions (beyond what grid's normal npc resolution provides).
 
-**`"snpc"` is banned.** `unit(v, "snpc")` resolves to a fraction of the
-shorter viewport dimension in device coordinates. This couples dot size to
-viewport aspect ratio: a tall narrow bar gets a different physical dot size
-than a short wide bar at the same `pattern_spacing`. Use `"npc"` instead.
-Dots will appear slightly elliptical on very non-square viewports — this is
-acceptable and consistent with how line spacing already behaves (line density
-is also anisotropic on non-square viewports in npc space).
+**Dot radius must use `"snpc"`, not `"npc"`.** `unit(r, "npc")` resolves
+using the x-axis of the viewport only, so dot size scales with viewport width
+and is inconsistent across shapes with different widths. `unit(r, "snpc")`
+resolves to a fraction of `min(viewport_width_px, viewport_height_px)`,
+ensuring the radius is equal in x and y device pixels on any viewport shape.
+This is the correct unit for dot radius.
+
+Note: the primary dot placement bug (bottom-left grid anchoring) was a
+`seq()` issue — the grid was not centred — not a radius unit issue. Both are
+fixed together. The `"snpc"` change is a correctness improvement; the grid
+centering is the actual placement bug fix.
 
 ## Diagnostic checklist for legend rendering issues
 
@@ -88,9 +86,11 @@ check in this order:
    It should be — verify that line 45 of `aaa_draw_key.R` still reads
    `pattern_fn(x = 0.05, y = 0.05, width = 0.9, height = 0.9, ...)`.
 
-3. **Is there a multiplier on any param in `legend_params`?**
-   There must not be. Every param is passed through `null_na_default` and
-   nothing else.
+3. **Is `legend_params$pattern_spacing` set to `swatch_npc / TARGET_REPS`?**
+   It must be. The user's `pattern_spacing` is intentionally not used in the
+   legend. If it has been replaced with a pass-through or a different
+   multiplier, restore the geometry-derived computation. `pattern_size` and
+   `pattern_angle` ARE passed through from user data.
 
 4. **Is the legend key itself sized correctly by ggplot2?**
    Rarely the issue. Checkable with

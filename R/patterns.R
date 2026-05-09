@@ -242,20 +242,29 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
     spacing <- params$pattern_spacing %||% 0.1
     size    <- params$pattern_size    %||% 0.35
     dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
-    xs <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
-    ys <- seq(spacing / 2, 1 - spacing / 2, by = spacing)
+
+    # Centre the dot grid symmetrically in [0, 1].
+    # seq(spacing/2, 1-spacing/2, by=spacing) anchors the first dot at the
+    # near edge but leaves a larger remainder gap at the far edge when spacing
+    # does not divide evenly into 1. Generating from 0 and recentering ensures
+    # equal margins on all four sides of the viewport.
+    xs_raw <- seq(0, 1, by = spacing)
+    xs     <- xs_raw - mean(range(xs_raw)) + 0.5
+    ys_raw <- seq(0, 1, by = spacing)
+    ys     <- ys_raw - mean(range(ys_raw)) + 0.5
+
     if (length(xs) == 0 || length(ys) == 0) return(grid::nullGrob())
     gc <- expand.grid(x = xs, y = ys)
     if (!is.null(params$poly_x)) {
       keep <- pip(gc$x, gc$y, params$poly_x, params$poly_y)
-      gc <- gc[keep, , drop = FALSE]
+      gc   <- gc[keep, , drop = FALSE]
     }
     if (nrow(gc) == 0) return(grid::nullGrob())
     clipped_grob(x, y, width, height,
       grid::circleGrob(
-        x = grid::unit(gc$x, "npc"),
-        y = grid::unit(gc$y, "npc"),
-        r = grid::unit(size * spacing / 2, "npc"),
+        x  = grid::unit(gc$x, "npc"),
+        y  = grid::unit(gc$y, "npc"),
+        r  = grid::unit(size * spacing / 2, "snpc"),
         gp = dot_gp
       )
     )

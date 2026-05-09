@@ -33,11 +33,19 @@ draw_key_pattern <- function(data, params, size) {
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 
-  # Legend key passes pattern params through unchanged — spacing is
-  # viewport-relative so the swatch naturally shows the correct density.
-  # No fudge factor needed or appropriate.
+  # Legend spacing is geometry-derived, not data-derived. The legend
+  # communicates pattern *identity* (what kind of pattern is this?), not
+  # pattern *density* (how sparse did the user set it?). TARGET_REPS
+  # controls how many pattern repetitions appear in the swatch — enough
+  # to read the pattern type clearly, few enough to avoid visual noise.
+  # pattern_angle and pattern_size are still passed from user data because
+  # those describe appearance, not density.
+  TARGET_REPS    <- 3L
+  swatch_npc     <- 0.9
+  legend_spacing <- swatch_npc / TARGET_REPS
+
   legend_params <- list(
-    pattern_spacing   = null_na_default(data$pattern_spacing,   0.08),
+    pattern_spacing   = legend_spacing,
     pattern_angle     = null_na_default(data$pattern_angle,     45),
     pattern_size      = null_na_default(data$pattern_size,      0.35),
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
