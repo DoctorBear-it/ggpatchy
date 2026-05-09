@@ -2,9 +2,9 @@
 
 This is a new submission. ggpatchy provides a `pattern` aesthetic for
 ggplot2 geoms, mapping discrete variables to hatch, crosshatch, dot, and
-other overlay patterns rendered via grid graphics. The patterns are
-clipped to the underlying shape and render cleanly at any resolution
-without raster fallback.
+other overlay patterns rendered via grid graphics. Patterns are clipped to
+the underlying shape and render cleanly at any resolution without raster
+fallback.
 
 ## R CMD check results
 
@@ -25,8 +25,8 @@ without raster fallback.
 
 ## Test environments
 
-* Local: Windows 11 x64, R 4.4.3 (via pixi/conda-forge)
-* GitHub Actions: (to be added — placeholder)
+* Local: Windows 11 x64 (build 26200), R 4.4.3 ucrt (conda-forge gcc 13.4.0),
+  Rtools44, via pixi
 
 ## Downstream dependencies
 

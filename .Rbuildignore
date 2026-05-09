@@ -10,3 +10,6 @@
 ^bootstrap\.R$
 ^cran-comments\.md$
 ^ROADMAP\.md$
+^CLAUDE\.md$
+^\.claude$
+^memory$

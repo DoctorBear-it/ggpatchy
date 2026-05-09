@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ggpatchy** is an R package (v0.1.0) that adds pattern fill overlays to ggplot2 geoms using native grid graphics — no ImageMagick or external raster dependencies.
+**ggpatchy** is an R package (v0.2.0) that adds pattern fill overlays to ggplot2 geoms using native grid graphics — no ImageMagick or external raster dependencies.
 
 ## Design Constraints (read before proposing solutions)
 
@@ -16,7 +16,7 @@ These are deliberate choices, not TODOs:
 
 ## Development Environment
 
-All dev tasks run through **pixi** (a conda-based environment manager). Always use pixi commands rather than calling R directly.
+All dev tasks run through **pixi** (a conda-based environment manager). Never invoke R directly — always use pixi commands.
 
 ```sh
 pixi run bootstrap    # Run once after cloning to lock .libPaths to pixi env
@@ -28,6 +28,18 @@ pixi run build        # Build package tarball
 pixi run install      # Install package into pixi env
 pixi run rstudio      # Launch RStudio with the pixi R
 ```
+
+### Windows: Rtools44
+
+Rtools44 is installed at `C:\rtools44`. Prepend its bin directories to PATH when running `pixi run check` or `pixi run check-fast`:
+
+```sh
+export PATH="/c/rtools44/usr/bin:/c/rtools44/mingw64/bin:$PATH" && pixi run check
+```
+
+### When a check or test fails
+
+Re-read `CLAUDE.md` before trying alternative approaches. Do not bypass the pixi task system to invoke R or other tools directly.
 
 To run a single test file:
 ```r
@@ -64,12 +76,14 @@ Built-in patterns: `none`, `hatch`, `crosshatch`, `horizontal`, `vertical`, `dot
 
 ### Geom Layer
 
-Three geoms extend existing ggplot2 ggproto classes:
+Five geoms extend existing ggplot2 ggproto classes:
 
 - `GeomColPattern` / `GeomBarPattern` (`R/geom_col_pattern.R`) — extend **`GeomRect`** (not `GeomBar`). This is deliberate: ggplot2 4.0 restructured `GeomBar` to no longer expose a `draw_panel` method we can safely override. `GeomRect` draws filled rectangles from `xmin/xmax/ymin/ymax`, which is what bars become after the stat + position stack runs. `setup_data()` derives `xmin/xmax/ymin/ymax` from `x/y` for the bar case.
 - `GeomPolygonPattern` (`R/geom_polygon_pattern.R`) — extends `GeomPolygon`; clips the pattern to the exact polygon shape using device-independent in-R computation. Polygon vertices are normalised to 0–1 bbox-relative coordinates and passed to pattern functions as `params$poly_x` / `params$poly_y`. Line patterns use `clip_segments_to_poly()` (parametric intersection + ray-casting midpoint test, supports concave simple polygons); `dots` uses `pip()` directly to filter grid positions.
+- `GeomRibbonPattern` / `GeomAreaPattern` (`R/geom_ribbon_pattern.R`) — extend **`GeomRibbon`** via `draw_group` override. The base ribbon is rendered by the parent; the pattern overlay reconstructs the ribbon polygon (upper ymax edge + reversed lower ymin edge) from `coord$transform` output and feeds it into the existing `clip_segments_to_poly` / `pip` clipper. `GeomAreaPattern` is a thin subclass that sets `ymin = 0`, `ymax = y` in `setup_data`, mirroring `GeomArea`. `orientation = "y"` is not supported for the pattern overlay.
+- `GeomViolinPattern` (`R/geom_violin_pattern.R`) — extends **`GeomViolin`** via `draw_group` override. Reconstructs the violin polygon from the `xminv`/`xmaxv` arithmetic that `GeomViolin` uses internally, transforms to npc, then clips the pattern to the violin outline. Requires a `violinwidth` column (computed by `stat_ydensity`); emits a message and returns `nullGrob()` if absent. `orientation = "y"` is not supported for the pattern overlay.
 
-`draw_panel()` renders each geometric primitive as a base rect/polygon grob plus a clipped pattern grob stacked in a `grobTree`.
+`draw_panel()` / `draw_group()` renders each geometric primitive as a base grob plus a clipped pattern grob stacked in a `grobTree`.
 
 The `draw_key_pattern()` function in `R/aaa_draw_key.R` (prefixed `aaa_` so it loads first alphabetically — geoms reference it at definition time) renders legend swatches. Legend swatches use a 2.5× spacing multiplier so patterns don't appear as a dense blob in the small key area.
 

@@ -1,5 +1,5 @@
 Package: ggpatchy
-Title: Simple Pattern Overlays for ggplot2
+Title: Pattern Fill Overlays for 'ggplot2' Geoms
 Version: 0.2.0
 Authors@R: 
     person(
@@ -9,10 +9,12 @@ Authors@R:
       role    = c("aut", "cre"),
       comment = c(ORCID = "0000-0002-7703-1011")
     )
-Description: Provides a 'pattern' aesthetic for 'ggplot2' geoms that maps
-    discrete variables to hatch, crosshatch, dot, and other overlay patterns
-    rendered via 'grid' graphics. Patterns are clipped correctly to arbitrary
-    shapes and render cleanly at any resolution.
+Description: Adds a 'pattern' aesthetic to 'ggplot2' geoms including bar,
+    column, polygon, ribbon, and area charts. Discrete variables are mapped
+    to hatch, crosshatch, dot, and other fill patterns rendered via native
+    'grid' graphics — no external raster dependencies are required. Patterns
+    are clipped to the exact shape of each geom and scale cleanly at any
+    output resolution.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -28,6 +30,7 @@ Suggests:
     vdiffr,
     knitr,
     rmarkdown
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://github.com/DoctorBear-it/ggpatchy
 BugReports: https://github.com/DoctorBear-it/ggpatchy/issues
