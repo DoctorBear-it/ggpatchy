@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,18 @@
       <small>Source: <a href="https://github.com/DoctorBear-it/ggpatchy/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="ggpatchy-040">ggpatchy 0.4.0<a class="anchor" aria-label="anchor" href="#ggpatchy-040"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-4-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-4-0"></a></h3>
+<ul><li>Minimum R version is now 4.1.0.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-and-improvements-0-4-0">Bug fixes and improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-improvements-0-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/geom_polygon_pattern.html">geom_polygon_pattern()</a></code> and <code><a href="../reference/geom_sf_pattern.html">geom_sf_pattern()</a></code> now clip patterns to the exact polygon boundary using the R 4.1 graphics engine clip path API. On R ≥ 4.1 with a supporting device (ragg, Cairo PDF, SVG), hatch lines and dots are correctly contained within the polygon shape. The previous bounding-box-only clipping is retained as a fallback for older R.</li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="ggpatchy-020">ggpatchy 0.2.0<a class="anchor" aria-label="anchor" href="#ggpatchy-020"></a></h2>
 <div class="section level3">

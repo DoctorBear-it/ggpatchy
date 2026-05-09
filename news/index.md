@@ -1,5 +1,24 @@
 # Changelog
 
+## ggpatchy 0.4.0
+
+### Breaking changes
+
+- Minimum R version is now 4.1.0.
+
+### Bug fixes and improvements
+
+- [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
+  and
+  [`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+  now clip patterns to the exact polygon boundary using the R 4.1
+  graphics engine clip path API. On R ≥ 4.1 with a supporting device
+  (ragg, Cairo PDF, SVG), hatch lines and dots are correctly contained
+  within the polygon shape. The previous bounding-box-only clipping is
+  retained as a fallback for older R.
+
+------------------------------------------------------------------------
+
 ## ggpatchy 0.2.0
 
 ### New geoms
