@@ -3,6 +3,11 @@ url: https://doctorbear-it.github.io/ggpatchy/
 template:
   bootstrap: 5
 
+articles:
+  - title: Articles
+    contents:
+      - mapping-with-patterns
+
 reference:
   - title: Geoms
     desc: Pattern-enabled geom layers, drop-in replacements for their ggplot2 counterparts.
@@ -16,6 +21,7 @@ reference:
       - geom_area_pattern
       - geom_density_pattern
       - geom_violin_pattern
+      - geom_sf_pattern
 
   - title: Scales
     desc: Map discrete variables to patterns.
