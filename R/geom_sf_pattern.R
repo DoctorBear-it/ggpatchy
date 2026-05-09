@@ -19,7 +19,7 @@
 # ------------------------------------------------------------
 
 #' @importFrom ggplot2 ggproto ggproto_parent aes layer
-#' @importFrom grid nullGrob grobTree gList
+#' @importFrom grid nullGrob grobTree gList gTree pathGrob gpar unit viewport as.path
 NULL
 
 # ---- GeomSfPattern ---------------------------------------------------------
@@ -169,7 +169,7 @@ GeomSfPattern <- ggplot2::ggproto(
   bh    <- diff(y_rng)
   if (bw < 1e-9 || bh < 1e-9) return(NULL)
 
-  pat_fn(
+  pattern_grob <- pat_fn(
     x      = x_rng[1],
     y      = y_rng[1],
     width  = bw,
@@ -180,6 +180,19 @@ GeomSfPattern <- ggplot2::ggproto(
       poly_y = (y_npc - y_rng[1]) / bh
     ))
   )
+
+  if (.has_clip_path_support()) {
+    clip_path_grob <- grid::pathGrob(
+      x    = grid::unit(x_npc, "npc"),
+      y    = grid::unit(y_npc, "npc"),
+      rule = "evenodd",
+      gp   = grid::gpar(fill = "black", col = NA)
+    )
+    vp <- grid::viewport(clip = grid::as.path(clip_path_grob))
+    grid::gTree(children = grid::gList(pattern_grob), vp = vp)
+  } else {
+    pattern_grob
+  }
 }
 
 # ---- User-facing layer function --------------------------------------------

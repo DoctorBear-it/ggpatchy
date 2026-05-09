@@ -5,7 +5,7 @@
 # ------------------------------------------------------------
 
 #' @importFrom ggplot2 ggproto GeomPolygon layer aes .pt
-#' @importFrom grid gTree gList polygonGrob gpar nullGrob unit viewport
+#' @importFrom grid gTree gList polygonGrob pathGrob gpar nullGrob unit viewport as.path
 #' @importFrom scales alpha
 NULL
 
@@ -90,7 +90,20 @@ GeomPolygonPattern <- ggplot2::ggproto(
         poly_y = (grp$y - by) / bh
       )
 
-      pattern_fn(bx, by, bw, bh, gp = base_gp, params = params)
+      pattern_grob <- pattern_fn(bx, by, bw, bh, gp = base_gp, params = params)
+
+      if (.has_clip_path_support()) {
+        clip_path_grob <- grid::pathGrob(
+          x    = grid::unit(grp$x, "npc"),
+          y    = grid::unit(grp$y, "npc"),
+          rule = rule,
+          gp   = grid::gpar(fill = "black", col = NA)
+        )
+        vp <- grid::viewport(clip = grid::as.path(clip_path_grob))
+        grid::gTree(children = grid::gList(pattern_grob), vp = vp)
+      } else {
+        pattern_grob
+      }
     })
 
     grid::gTree(

@@ -129,6 +129,12 @@ test_that("hatch pattern generates more line segments at tighter spacing", {
   expect_gt(count_segs(0.03), count_segs(0.20))
 })
 
+test_that(".has_clip_path_support() returns logical scalar", {
+  result <- ggpatchy:::.has_clip_path_support()
+  expect_true(is.logical(result))
+  expect_length(result, 1L)
+})
+
 test_that("hatch pattern angle changes line direction", {
   fn      <- get_pattern_fn("hatch")
   base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
