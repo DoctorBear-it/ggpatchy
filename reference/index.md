@@ -42,3 +42,10 @@ Register your own pattern functions.
   : Register a custom pattern function
 - [`list_patterns()`](https://doctorbear-it.github.io/ggpatchy/reference/list_patterns.md)
   : List available built-in pattern names
+
+## Accessibility
+
+Check and correct pattern-to-fill contrast.
+
+- [`pattern_contrast()`](https://doctorbear-it.github.io/ggpatchy/reference/pattern_contrast.md)
+  : Compute WCAG 2.1 contrast ratio between two colours

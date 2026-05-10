@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,39 @@
       <small>Source: <a href="https://github.com/DoctorBear-it/ggpatchy/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="ggpatchy-060">ggpatchy 0.6.0<a class="anchor" aria-label="anchor" href="#ggpatchy-060"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
+<ul><li>
+<code>pattern_spacing</code> now specifies spacing in <strong>millimetres</strong> (previously a dimensionless fraction of each shape’s bounding box). The default changes from <code>0.08</code> to <code>5</code> mm. Update existing code that sets <code>pattern_spacing</code> explicitly: <code>0.08</code> → <code>5</code>, <code>0.04</code> (dense) → <code>2.5</code>, <code>0.16</code> (sparse) → <code>10</code>, or similar.</li>
+<li>
+<code>pattern_size</code> for the <code>"dots"</code> pattern is now the dot <strong>radius</strong> in millimetres (previously dimensionless). Default changes from <code>0.4</code> to <code>0.5</code> mm.</li>
+<li>Legend key pattern density is no longer overridden to a fixed <code>TARGET_REPS</code>-based value. The legend now shows the same physical spacing as the data, which means legend swatches for dense patterns will look denser than for sparse patterns. This is correct behaviour.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="why-this-change-0-6-0">Why this change<a class="anchor" aria-label="anchor" href="#why-this-change-0-6-0"></a></h3>
+<p>The previous bounding-box-relative model produced different visual densities across shapes of different physical sizes in the same plot — most visibly on choropleth maps where small and large regions received wildly different dot counts. Millimetre units resolve against device physical dimensions at draw time, independently of viewport size, giving uniform density across all shapes. See <code><a href="../articles/design-philosophy.html">vignette("design-philosophy")</a></code> for full details.</p>
+</div>
+<div class="section level3">
+<h3 id="interactive-resizing-0-6-0">Interactive resizing<a class="anchor" aria-label="anchor" href="#interactive-resizing-0-6-0"></a></h3>
+<p>When resizing a plot window interactively, pattern density will appear to change as the physical dimensions change. This is correct — <code>pattern_spacing = 5</code> always means 5mm regardless of window size. For consistent results, set chunk <code>fig.width</code>/<code>fig.height</code> to match your intended <code><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave()</a></code> dimensions.</p>
+</div>
+<div class="section level3">
+<h3 id="internal-changes-0-6-0">Internal changes<a class="anchor" aria-label="anchor" href="#internal-changes-0-6-0"></a></h3>
+<ul><li>
+<code>makeContent.DotPatternTree</code> and <code>makeContent.LinePatternTree</code> now convert mm → npc via <code><a href="https://rdrr.io/r/grid/grid.convert.html" class="external-link">grid::convertWidth</a></code> / <code><a href="https://rdrr.io/r/grid/grid.convert.html" class="external-link">grid::convertHeight</a></code> at draw time inside the active shape viewport (infrastructure introduced in v0.5.x).</li>
+</ul><hr></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.1" id="ggpatchy-051">ggpatchy 0.5.1<a class="anchor" aria-label="anchor" href="#ggpatchy-051"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-1"></a></h3>
+<ul><li>New exported function <code>pattern_contrast(colour1, colour2)</code> returns the WCAG 2.1 contrast ratio between two colours. Useful for pre-validating colour choices programmatically.</li>
+<li>New geom aesthetic <code>pattern_contrast_check</code>: set to a numeric threshold (e.g. <code>3.0</code> for WCAG AA non-text) to receive a warning when any shape’s <code>pattern_colour</code> / <code>fill</code> contrast falls below it. <code>TRUE</code> is an alias for <code>3.0</code>. Default <code>0</code> (disabled, no behaviour change).</li>
+<li>New geom aesthetic <code>pattern_contrast_correct</code>: set to <code>TRUE</code> to automatically adjust <code>pattern_colour</code> luminance to just meet the contrast threshold before drawing. Correction is silent; the adjusted colour is used for rendering only and does not modify your data. Default <code>FALSE</code>. When <code>pattern_contrast_correct = TRUE</code> without an explicit <code>pattern_contrast_check</code>, the correction threshold defaults to <code>3.0</code>.</li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="ggpatchy-050">ggpatchy 0.5.0<a class="anchor" aria-label="anchor" href="#ggpatchy-050"></a></h2>
 <div class="section level3">

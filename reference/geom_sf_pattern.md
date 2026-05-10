@@ -96,8 +96,11 @@ this geom accepts:
 
 - `pattern_spacing`:
 
-  Spacing relative to the polygon bounding box (npc units). Default
-  `0.08`.
+  Spacing between pattern elements in millimetres. Default `5`. Smaller
+  values produce denser patterns; larger values produce sparser
+  patterns. Named density variants (e.g. `"hatch_dense"`) bake in a
+  pre-set spacing multiplier but still respect explicit
+  `pattern_spacing` values.
 
 - `pattern_angle`:
 
@@ -105,7 +108,7 @@ this geom accepts:
 
 - `pattern_size`:
 
-  Dot size for the `"dots"` pattern. Default `0.35`.
+  Dot radius in millimetres for the `"dots"` pattern. Default `0.5`.
 
 ## Geometry type support
 

@@ -125,8 +125,11 @@ this geom accepts:
 
 - `pattern_spacing`:
 
-  Spacing between pattern elements as a fraction of the violin bounding
-  box (npc units). Default `0.08`.
+  Spacing between pattern elements in millimetres. Default `5`. Smaller
+  values produce denser patterns; larger values produce sparser
+  patterns. Named density variants (e.g. `"hatch_dense"`) bake in a
+  pre-set spacing multiplier but still respect explicit
+  `pattern_spacing` values.
 
 - `pattern_angle`:
 
@@ -134,7 +137,7 @@ this geom accepts:
 
 - `pattern_size`:
 
-  Dot diameter in mm for the `"dots"` pattern. Default `0.4`.
+  Dot radius in millimetres for the `"dots"` pattern. Default `0.5`.
 
 ## Limitations
 
@@ -156,9 +159,9 @@ silently skipped. Use
 [`coord_flip()`](https://ggplot2.tidyverse.org/reference/coord_flip.html)
 on a vertical violin as a workaround.
 
-**Pattern spacing is viewport-relative.** `pattern_spacing = 0.08` means
-8% of the violin's bounding box, so visual density is consistent across
-violins of any width.
+**Pattern spacing is in millimetres.** `pattern_spacing = 5` means 5mm
+between pattern elements regardless of violin size, so density is
+physically consistent across violins of any width.
 
 ## Examples
 

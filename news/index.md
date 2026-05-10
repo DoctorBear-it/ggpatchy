@@ -1,5 +1,75 @@
 # Changelog
 
+## ggpatchy 0.6.0
+
+### Breaking changes
+
+- `pattern_spacing` now specifies spacing in **millimetres** (previously
+  a dimensionless fraction of each shape’s bounding box). The default
+  changes from `0.08` to `5` mm. Update existing code that sets
+  `pattern_spacing` explicitly: `0.08` → `5`, `0.04` (dense) → `2.5`,
+  `0.16` (sparse) → `10`, or similar.
+- `pattern_size` for the `"dots"` pattern is now the dot **radius** in
+  millimetres (previously dimensionless). Default changes from `0.4` to
+  `0.5` mm.
+- Legend key pattern density is no longer overridden to a fixed
+  `TARGET_REPS`-based value. The legend now shows the same physical
+  spacing as the data, which means legend swatches for dense patterns
+  will look denser than for sparse patterns. This is correct behaviour.
+
+### Why this change
+
+The previous bounding-box-relative model produced different visual
+densities across shapes of different physical sizes in the same plot —
+most visibly on choropleth maps where small and large regions received
+wildly different dot counts. Millimetre units resolve against device
+physical dimensions at draw time, independently of viewport size, giving
+uniform density across all shapes. See
+[`vignette("design-philosophy")`](https://doctorbear-it.github.io/ggpatchy/articles/design-philosophy.md)
+for full details.
+
+### Interactive resizing
+
+When resizing a plot window interactively, pattern density will appear
+to change as the physical dimensions change. This is correct —
+`pattern_spacing = 5` always means 5mm regardless of window size. For
+consistent results, set chunk `fig.width`/`fig.height` to match your
+intended
+[`ggsave()`](https://ggplot2.tidyverse.org/reference/ggsave.html)
+dimensions.
+
+### Internal changes
+
+- `makeContent.DotPatternTree` and `makeContent.LinePatternTree` now
+  convert mm → npc via
+  [`grid::convertWidth`](https://rdrr.io/r/grid/grid.convert.html) /
+  [`grid::convertHeight`](https://rdrr.io/r/grid/grid.convert.html) at
+  draw time inside the active shape viewport (infrastructure introduced
+  in v0.5.x).
+
+------------------------------------------------------------------------
+
+## ggpatchy 0.5.1
+
+### New features
+
+- New exported function `pattern_contrast(colour1, colour2)` returns the
+  WCAG 2.1 contrast ratio between two colours. Useful for pre-validating
+  colour choices programmatically.
+- New geom aesthetic `pattern_contrast_check`: set to a numeric
+  threshold (e.g. `3.0` for WCAG AA non-text) to receive a warning when
+  any shape’s `pattern_colour` / `fill` contrast falls below it. `TRUE`
+  is an alias for `3.0`. Default `0` (disabled, no behaviour change).
+- New geom aesthetic `pattern_contrast_correct`: set to `TRUE` to
+  automatically adjust `pattern_colour` luminance to just meet the
+  contrast threshold before drawing. Correction is silent; the adjusted
+  colour is used for rendering only and does not modify your data.
+  Default `FALSE`. When `pattern_contrast_correct = TRUE` without an
+  explicit `pattern_contrast_check`, the correction threshold defaults
+  to `3.0`.
+
+------------------------------------------------------------------------
+
 ## ggpatchy 0.5.0
 
 ### New features

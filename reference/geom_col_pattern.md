@@ -101,8 +101,11 @@ these geoms accept:
 
 - `pattern_spacing`:
 
-  Spacing between pattern elements as a fraction of the bar width/height
-  (npc units). Default `0.08`.
+  Spacing between pattern elements in millimetres. Default `5`. Smaller
+  values produce denser patterns; larger values produce sparser
+  patterns. Named density variants (e.g. `"hatch_dense"`) bake in a
+  pre-set spacing multiplier but still respect explicit
+  `pattern_spacing` values.
 
 - `pattern_angle`:
 
@@ -110,7 +113,7 @@ these geoms accept:
 
 - `pattern_size`:
 
-  Dot diameter in mm for the `"dots"` pattern. Default `0.4`.
+  Dot radius in millimetres for the `"dots"` pattern. Default `0.5`.
 
 ## Examples
 
