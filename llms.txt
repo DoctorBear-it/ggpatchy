@@ -64,14 +64,14 @@ list_patterns()  # see all registered patterns
 
 ## Pattern aesthetics
 
-| Aesthetic           | Controls                      | Default   |
-|---------------------|-------------------------------|-----------|
-| `pattern`           | Pattern name                  | `"none"`  |
-| `pattern_colour`    | Line/dot colour               | `"black"` |
-| `pattern_linewidth` | Line width (line patterns)    | `1`       |
-| `pattern_spacing`   | Spacing (npc fraction)        | `0.08`    |
-| `pattern_angle`     | Angle in degrees (hatch)      | `45`      |
-| `pattern_size`      | Dot size in mm (dots pattern) | `0.4`     |
+| Aesthetic           | Controls                                    | Default   |
+|---------------------|---------------------------------------------|-----------|
+| `pattern`           | Pattern name                                | `"none"`  |
+| `pattern_colour`    | Line/dot colour                             | `"black"` |
+| `pattern_linewidth` | Line width (line patterns)                  | `1`       |
+| `pattern_spacing`   | Spacing as fraction of shape’s bounding box | `0.08`    |
+| `pattern_angle`     | Angle in degrees (`hatch`/`crosshatch`)     | `45`      |
+| `pattern_size`      | Dot size relative to spacing (`dots`)       | `0.35`    |
 
 ## Scales
 
@@ -132,6 +132,20 @@ ggplot(df, aes(group, value, fill = group, pattern = group)) +
   — bars (`stat = "count"`)
 - [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
   — arbitrary polygons with path-clipped patterns
+- [`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+  — ribbons and confidence bands
+- [`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+  — filled area charts (stacks supported)
+- [`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+  — violin plots
+- [`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+  — smooth density estimates
+- [`geom_rect_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+  — rectangles from `xmin/xmax/ymin/ymax`
+- [`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+  — tiles from centre coordinates
+- [`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+  — sf POLYGON / MULTIPOLYGON geometries (requires **sf**)
 
 ## Why not ggpattern?
 
@@ -218,5 +232,7 @@ Register your own pattern functions.
 
 ### Articles
 
+- [Design
+  Philosophy](https://doctorbear-it.github.io/ggpatchy/articles/design-philosophy.md):
 - [Mapping with
   Patterns](https://doctorbear-it.github.io/ggpatchy/articles/mapping-with-patterns.md):

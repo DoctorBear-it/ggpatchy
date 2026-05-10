@@ -153,9 +153,9 @@ silently skipped. Use
 [`coord_flip()`](https://ggplot2.tidyverse.org/reference/coord_flip.html)
 on a vertical violin as a workaround.
 
-**Pattern spacing is bounding-box relative.** Spacing is computed
-relative to each violin's bounding box. Narrow violins will show denser
-patterns than wide violins at the same `pattern_spacing` value.
+**Pattern spacing is viewport-relative.** `pattern_spacing = 0.08` means
+8% of the violin's bounding box, so visual density is consistent across
+violins of any width.
 
 ## Examples
 

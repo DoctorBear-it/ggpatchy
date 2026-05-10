@@ -1,0 +1,98 @@
+# Design Philosophy
+
+This document records the design invariants that govern ggpatchy’s
+internals. It is written for contributors, not users. If you are adding
+a pattern or modifying the rendering pipeline, read this first.
+
+## Coordinate system contract
+
+Every pattern parameter is **viewport-relative**.
+`pattern_spacing = 0.08` means 8% of the shape’s bounding box — whether
+that shape is a bar, tile, polygon, sf geometry, violin, density curve,
+or a legend key swatch. No shape-specific scaling is applied at any
+layer.
+
+This is not magic. It follows directly from how grid viewports work.
+`clipped_grob()` creates a viewport sized to the bounding box and
+renders pattern grobs as children of that viewport. Inside the viewport,
+`unit(v, "npc")` resolves to `v * bounding_box_dimension`. So
+`spacing = 0.08` is 8% of the bbox on every shape at every scale,
+automatically.
+
+The consequence for data shapes: pattern spacing is consistent across
+all shape types and sizes. The legend key is a deliberate exception —
+see below.
+
+## Legend key spacing is geometry-derived, not data-derived
+
+The legend key communicates pattern *identity* — what type of pattern is
+this? — not pattern *density*. A sparse hatch (`pattern_spacing = 0.2`)
+and a dense hatch (`pattern_spacing = 0.04`) both show hatch lines in
+the legend swatch. The number of lines is standardised to approximately
+3 repetitions across the swatch, computed from the swatch geometry:
+
+``` r
+
+TARGET_REPS    <- 3L
+swatch_npc     <- 0.9   # swatch fills 90% of the key
+legend_spacing <- swatch_npc / TARGET_REPS   # = 0.3
+```
+
+This is not a fudge factor — it is geometry. `legend_spacing` is derived
+from the swatch dimensions and a transparent design constant
+(`TARGET_REPS`) with a clear meaning: how many pattern repetitions
+appear in the legend key. The user’s `pattern_spacing` value is
+intentionally not used in the legend because legend density is not a
+user-controlled variable. Dot radius (`pattern_size`) and angle
+(`pattern_angle`) are still passed through from user settings — those
+describe pattern *appearance*, not density.
+
+**The rule:** pattern functions themselves must never adjust their
+parameters based on rendering context. Only `draw_key_pattern` may
+deviate from user parameters, only for `pattern_spacing`, and only with
+this geometry-derived value.
+
+## Pattern functions are pure
+
+Pattern functions `fn(x, y, width, height, gp, params)` have no side
+effects and make no assumptions about rendering context beyond what is
+passed to them. They must not inspect global state, device dimensions,
+or parent viewport dimensions (beyond what grid’s normal npc resolution
+provides).
+
+**Dot radius must use `"snpc"`, not `"npc"`.** `unit(r, "npc")` resolves
+using the x-axis of the viewport only, so dot size scales with viewport
+width and is inconsistent across shapes with different widths.
+`unit(r, "snpc")` resolves to a fraction of
+`min(viewport_width_px, viewport_height_px)`, ensuring the radius is
+equal in x and y device pixels on any viewport shape. This is the
+correct unit for dot radius.
+
+Note: the primary dot placement bug (bottom-left grid anchoring) was a
+[`seq()`](https://rdrr.io/r/base/seq.html) issue — the grid was not
+centred — not a radius unit issue. Both are fixed together. The `"snpc"`
+change is a correctness improvement; the grid centering is the actual
+placement bug fix.
+
+## Diagnostic checklist for legend rendering issues
+
+If the legend swatch looks wrong (too dense, too sparse, wrong angle,
+etc.), check in this order:
+
+1.  **Is `pattern_spacing` viewport-relative in the pattern function?**
+    There must be no `bbox_scale`, no `sqrt(width * height)`, no
+    division by panel dimensions. If present, remove it.
+
+2.  **Is `draw_key_pattern` passing `width = 0.9, height = 0.9`?** It
+    should be — verify that line 45 of `aaa_draw_key.R` still reads
+    `pattern_fn(x = 0.05, y = 0.05, width = 0.9, height = 0.9, ...)`.
+
+3.  **Is `legend_params$pattern_spacing` set to
+    `swatch_npc / TARGET_REPS`?** It must be. The user’s
+    `pattern_spacing` is intentionally not used in the legend. If it has
+    been replaced with a pass-through or a different multiplier, restore
+    the geometry-derived computation. `pattern_size` and `pattern_angle`
+    ARE passed through from user data.
+
+4.  **Is the legend key itself sized correctly by ggplot2?** Rarely the
+    issue. Checkable with `theme(legend.key.size = unit(1, "cm"))`.

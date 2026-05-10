@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -186,6 +186,71 @@ sets <code>ymin = 0</code> automatically and defaults to
 <p><img src="ggpatchy_files/figure-html/area-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level2">
+<h2 id="violin-charts">Violin charts<a class="anchor" aria-label="anchor" href="#violin-charts"></a>
+</h2>
+<p><code><a href="../reference/geom_violin_pattern.html">geom_violin_pattern()</a></code> adds patterns to violin plots. Use
+it as a drop-in replacement for <code><a href="https://ggplot2.tidyverse.org/reference/geom_violin.html" class="external-link">geom_violin()</a></code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">hwy</span>, fill <span class="op">=</span> <span class="va">class</span>, pattern <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/geom_violin_pattern.html">geom_violin_pattern</a></span><span class="op">(</span>pattern_colour <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/scale_pattern_discrete.html">scale_pattern_discrete</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette <span class="op">=</span> <span class="st">"Pastel1"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">30</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"geom_violin_pattern()"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggpatchy_files/figure-html/violin-1.png" class="r-plt" alt="" width="576"></p>
+</div>
+<div class="section level2">
+<h2 id="density-plots">Density plots<a class="anchor" aria-label="anchor" href="#density-plots"></a>
+</h2>
+<p><code><a href="../reference/geom_density_pattern.html">geom_density_pattern()</a></code> extends
+<code><a href="https://ggplot2.tidyverse.org/reference/geom_density.html" class="external-link">geom_density()</a></code> for pattern fills on smooth density
+estimates.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">hwy</span>, fill <span class="op">=</span> <span class="va">drv</span>, pattern <span class="op">=</span> <span class="va">drv</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/geom_density_pattern.html">geom_density_pattern</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.7</span>, pattern_colour <span class="op">=</span> <span class="st">"grey20"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/scale_pattern_manual.html">scale_pattern_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"4"</span> <span class="op">=</span> <span class="st">"hatch"</span>, <span class="st">"f"</span> <span class="op">=</span> <span class="st">"crosshatch"</span>, <span class="st">"r"</span> <span class="op">=</span> <span class="st">"dots"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette <span class="op">=</span> <span class="st">"Pastel2"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"geom_density_pattern()"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggpatchy_files/figure-html/density-1.png" class="r-plt" alt="" width="576"></p>
+</div>
+<div class="section level2">
+<h2 id="rectangles-and-tiles">Rectangles and tiles<a class="anchor" aria-label="anchor" href="#rectangles-and-tiles"></a>
+</h2>
+<p><code><a href="../reference/geom_rect_pattern.html">geom_rect_pattern()</a></code> and <code><a href="../reference/geom_rect_pattern.html">geom_tile_pattern()</a></code>
+add pattern overlays to rectangle geoms.
+<code><a href="../reference/geom_rect_pattern.html">geom_tile_pattern()</a></code> is convenient for heatmap-style layouts
+where cells are specified by centre coordinates.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">blocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  xmin    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  xmax    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>  ymin    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  ymax    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  pattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hatch"</span>, <span class="st">"crosshatch"</span>, <span class="st">"dots"</span>, <span class="st">"vertical"</span>, <span class="st">"horizontal"</span>, <span class="st">"weave"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">blocks</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">xmin</span>, xmax <span class="op">=</span> <span class="va">xmax</span>, ymin <span class="op">=</span> <span class="va">ymin</span>, ymax <span class="op">=</span> <span class="va">ymax</span>,</span>
+<span>                   fill <span class="op">=</span> <span class="va">pattern</span>, pattern <span class="op">=</span> <span class="va">pattern</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/geom_rect_pattern.html">geom_rect_pattern</a></span><span class="op">(</span>pattern_colour <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/scale_pattern_identity.html">scale_pattern_identity</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette <span class="op">=</span> <span class="st">"Pastel1"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"geom_rect_pattern() — all six line/dot patterns"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="ggpatchy_files/figure-html/rect-1.png" class="r-plt" alt="" width="576"></p>
+</div>
+<div class="section level2">
+<h2 id="choropleth-maps">Choropleth maps<a class="anchor" aria-label="anchor" href="#choropleth-maps"></a>
+</h2>
+<p><code><a href="../reference/geom_sf_pattern.html">geom_sf_pattern()</a></code> works with sf geometry columns. It
+uses pattern to add a second encoding channel alongside fill colour,
+which is useful for accessibility (grayscale printing, colour-vision
+deficiency). See the <strong>Mapping with Patterns</strong> vignette for
+full examples with the NC counties and US states datasets.</p>
+</div>
+<div class="section level2">
 <h2 id="pattern-reference">Pattern reference<a class="anchor" aria-label="anchor" href="#pattern-reference"></a>
 </h2>
 <p>Built-in patterns:</p>
@@ -238,7 +303,9 @@ sets <code>ymin = 0</code> automatically and defaults to
 </tr>
 </tbody>
 </table>
-<p>Custom patterns can be registered with
+<p><code>pattern_spacing</code> is interpreted as a fraction of each
+shape’s bounding box, so the visual density stays consistent across
+shapes of any size. Custom patterns can be registered with
 <code><a href="../reference/register_pattern.html">register_pattern()</a></code>.</p>
 </div>
 <div class="section level2">
@@ -259,11 +326,6 @@ for pattern overlays.</strong> <code><a href="../reference/geom_violin_pattern.h
 all skip the pattern when <code>orientation = "y"</code> or
 <code>flipped_aes = TRUE</code>. The base shape still renders correctly.
 Use <code><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip()</a></code> on a vertical geom as a workaround.</p>
-<p><strong>Polygon clipping is bounding-box relative:</strong> Pattern
-spacing and coordinates are computed relative to each polygon’s bounding
-box, not the panel viewport. Very thin or elongated shapes (e.g. narrow
-violins, skinny ribbon bands) may show denser or sparser patterns than
-wide shapes at the same <code>pattern_spacing</code> value.</p>
 <p><strong>Non-Cartesian coordinates:</strong> Patterns are drawn in
 screen (npc) space after <code>coord$transform()</code>. Under
 <code>coord_polar</code> or <code>coord_sf</code> the pattern lines

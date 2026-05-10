@@ -11,7 +11,7 @@ device-independent in-R geometry as geom_polygon_pattern()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -185,9 +185,9 @@ the requirement explicit.</p>
 <p><strong><code>orientation = "y"</code> (horizontal violins) is not supported</strong> for the
 pattern overlay. The base violin renders correctly, but the pattern is
 silently skipped. Use <code><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip()</a></code> on a vertical violin as a workaround.</p>
-<p><strong>Pattern spacing is bounding-box relative.</strong> Spacing is computed relative
-to each violin's bounding box. Narrow violins will show denser patterns
-than wide violins at the same <code>pattern_spacing</code> value.</p>
+<p><strong>Pattern spacing is viewport-relative.</strong> <code>pattern_spacing = 0.08</code> means
+8% of the violin's bounding box, so visual density is consistent across
+violins of any width.</p>
     </div>
 
     <div class="section level2">

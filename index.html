@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,6 +135,11 @@
 <h2 id="pattern-aesthetics">Pattern aesthetics<a class="anchor" aria-label="anchor" href="#pattern-aesthetics"></a>
 </h2>
 <table class="table">
+<colgroup>
+<col width="27%">
+<col width="58%">
+<col width="14%">
+</colgroup>
 <thead><tr>
 <th>Aesthetic</th>
 <th>Controls</th>
@@ -158,18 +163,18 @@
 </tr>
 <tr>
 <td><code>pattern_spacing</code></td>
-<td>Spacing (npc fraction)</td>
+<td>Spacing as fraction of shape’s bounding box</td>
 <td><code>0.08</code></td>
 </tr>
 <tr>
 <td><code>pattern_angle</code></td>
-<td>Angle in degrees (hatch)</td>
+<td>Angle in degrees (<code>hatch</code>/<code>crosshatch</code>)</td>
 <td><code>45</code></td>
 </tr>
 <tr>
 <td><code>pattern_size</code></td>
-<td>Dot size in mm (dots pattern)</td>
-<td><code>0.4</code></td>
+<td>Dot size relative to spacing (<code>dots</code>)</td>
+<td><code>0.35</code></td>
 </tr>
 </tbody>
 </table>
@@ -225,6 +230,21 @@
 <code><a href="reference/geom_col_pattern.html">geom_bar_pattern()</a></code> — bars (<code>stat = "count"</code>)</li>
 <li>
 <code><a href="reference/geom_polygon_pattern.html">geom_polygon_pattern()</a></code> — arbitrary polygons with path-clipped patterns</li>
+<li>
+<code><a href="reference/geom_ribbon_pattern.html">geom_ribbon_pattern()</a></code> — ribbons and confidence bands</li>
+<li>
+<code><a href="reference/geom_ribbon_pattern.html">geom_area_pattern()</a></code> — filled area charts (stacks supported)</li>
+<li>
+<code><a href="reference/geom_violin_pattern.html">geom_violin_pattern()</a></code> — violin plots</li>
+<li>
+<code><a href="reference/geom_density_pattern.html">geom_density_pattern()</a></code> — smooth density estimates</li>
+<li>
+<code><a href="reference/geom_rect_pattern.html">geom_rect_pattern()</a></code> — rectangles from <code>xmin/xmax/ymin/ymax</code>
+</li>
+<li>
+<code><a href="reference/geom_rect_pattern.html">geom_tile_pattern()</a></code> — tiles from centre coordinates</li>
+<li>
+<code><a href="reference/geom_sf_pattern.html">geom_sf_pattern()</a></code> — sf POLYGON / MULTIPOLYGON geometries (requires <strong>sf</strong>)</li>
 </ul>
 </div>
 <div class="section level2">

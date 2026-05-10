@@ -160,6 +160,85 @@ ggplot(df3, aes(x, y, fill = group, pattern = pattern)) +
 
 ![](ggpatchy_files/figure-html/area-1.png)
 
+## Violin charts
+
+[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+adds patterns to violin plots. Use it as a drop-in replacement for
+[`geom_violin()`](https://ggplot2.tidyverse.org/reference/geom_violin.html).
+
+``` r
+
+ggplot(mpg, aes(class, hwy, fill = class, pattern = class)) +
+  geom_violin_pattern(pattern_colour = "grey30") +
+  scale_pattern_discrete() +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  labs(title = "geom_violin_pattern()")
+```
+
+![](ggpatchy_files/figure-html/violin-1.png)
+
+## Density plots
+
+[`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+extends
+[`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html)
+for pattern fills on smooth density estimates.
+
+``` r
+
+ggplot(mpg, aes(hwy, fill = drv, pattern = drv)) +
+  geom_density_pattern(alpha = 0.7, pattern_colour = "grey20") +
+  scale_pattern_manual(values = c("4" = "hatch", "f" = "crosshatch", "r" = "dots")) +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  labs(title = "geom_density_pattern()")
+```
+
+![](ggpatchy_files/figure-html/density-1.png)
+
+## Rectangles and tiles
+
+[`geom_rect_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+and
+[`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+add pattern overlays to rectangle geoms.
+[`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+is convenient for heatmap-style layouts where cells are specified by
+centre coordinates.
+
+``` r
+
+blocks <- data.frame(
+  xmin    = c(0, 1, 2, 0, 1, 2),
+  xmax    = c(1, 2, 3, 1, 2, 3),
+  ymin    = c(0, 0, 0, 1, 1, 1),
+  ymax    = c(1, 1, 1, 2, 2, 2),
+  pattern = c("hatch", "crosshatch", "dots", "vertical", "horizontal", "weave")
+)
+
+ggplot(blocks, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                   fill = pattern, pattern = pattern)) +
+  geom_rect_pattern(pattern_colour = "grey30") +
+  scale_pattern_identity() +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_fixed() +
+  theme_void() +
+  labs(title = "geom_rect_pattern() — all six line/dot patterns")
+```
+
+![](ggpatchy_files/figure-html/rect-1.png)
+
+## Choropleth maps
+
+[`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+works with sf geometry columns. It uses pattern to add a second encoding
+channel alongside fill colour, which is useful for accessibility
+(grayscale printing, colour-vision deficiency). See the **Mapping with
+Patterns** vignette for full examples with the NC counties and US states
+datasets.
+
 ## Pattern reference
 
 Built-in patterns:
@@ -174,6 +253,8 @@ Built-in patterns:
 | `dots`       | Regular dot grid              | No (fixed)                |
 | `weave`      | Woven over/under line texture | No (fixed)                |
 
+`pattern_spacing` is interpreted as a fraction of each shape’s bounding
+box, so the visual density stays consistent across shapes of any size.
 Custom patterns can be registered with
 [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
 
@@ -199,12 +280,6 @@ all skip the pattern when `orientation = "y"` or `flipped_aes = TRUE`.
 The base shape still renders correctly. Use
 [`coord_flip()`](https://ggplot2.tidyverse.org/reference/coord_flip.html)
 on a vertical geom as a workaround.
-
-**Polygon clipping is bounding-box relative:** Pattern spacing and
-coordinates are computed relative to each polygon’s bounding box, not
-the panel viewport. Very thin or elongated shapes (e.g. narrow violins,
-skinny ribbon bands) may show denser or sparser patterns than wide
-shapes at the same `pattern_spacing` value.
 
 **Non-Cartesian coordinates:** Patterns are drawn in screen (npc) space
 after `coord$transform()`. Under `coord_polar` or `coord_sf` the pattern
