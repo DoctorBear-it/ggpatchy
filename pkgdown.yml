@@ -5,7 +5,8 @@ articles:
   design-philosophy: design-philosophy.html
   ggpatchy: ggpatchy.html
   mapping-with-patterns: mapping-with-patterns.html
-last_built: 2026-05-10T05:17Z
+  pattern-reference: pattern-reference.html
+last_built: 2026-05-10T06:10Z
 urls:
   reference: https://doctorbear-it.github.io/ggpatchy/reference
   article: https://doctorbear-it.github.io/ggpatchy/articles

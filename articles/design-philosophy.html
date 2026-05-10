@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,50 +65,102 @@
 internals. It is written for contributors, not users. If you are adding
 a pattern or modifying the rendering pipeline, read this first.</p>
 <div class="section level2">
-<h2 id="coordinate-system-contract">Coordinate system contract<a class="anchor" aria-label="anchor" href="#coordinate-system-contract"></a>
+<h2 id="the-user-contract">The user contract<a class="anchor" aria-label="anchor" href="#the-user-contract"></a>
 </h2>
-<p>Every pattern parameter is <strong>viewport-relative</strong>.
-<code>pattern_spacing = 0.08</code> means 8% of the shape’s bounding box
-— whether that shape is a bar, tile, polygon, sf geometry, violin,
-density curve, or a legend key swatch. No shape-specific scaling is
-applied at any layer.</p>
+<p>The pattern reference vignette
+(<code>vignettes/pattern-reference.Rmd</code>) is the authoritative
+definition of what “correct” looks like. At the default
+<code>pattern_spacing</code>, every standard pattern should be visually
+consistent and readable on a typical chart element. Any deviation from
+that baseline is explicitly the user’s choice, made by setting
+<code>pattern_spacing</code> explicitly.</p>
+<p>The strongest form of this contract — and the goal of the 0.6.0
+release — is <strong>physical uniformity across all shapes in the same
+plot</strong>: a small polygon and a large polygon with the same
+<code>pattern_spacing</code> should have the same physical distance
+between hatch lines, the same physical dot size, and the same physical
+dot pitch. Users should never see a map where small counties have 2 dots
+and large counties have 50.</p>
+</div>
+<div class="section level2">
+<h2 id="coordinate-system-contract-current-bbox-relative-target-mm">Coordinate system contract (current: bbox-relative; target: mm)<a class="anchor" aria-label="anchor" href="#coordinate-system-contract-current-bbox-relative-target-mm"></a>
+</h2>
+<div class="section level3">
+<h3 id="current-implementation-v0-5-x">Current implementation (v0.5.x)<a class="anchor" aria-label="anchor" href="#current-implementation-v0-5-x"></a>
+</h3>
+<p>Pattern spacing is <strong>viewport-relative</strong> (bounding-box
+fraction). <code>pattern_spacing = 0.08</code> means 8% of the shape’s
+bounding box — whether that shape is a bar, tile, polygon, sf geometry,
+violin, or density curve.</p>
 <p>This is not magic. It follows directly from how grid viewports work.
 <code>clipped_grob()</code> creates a viewport sized to the bounding box
 and renders pattern grobs as children of that viewport. Inside the
 viewport, <code>unit(v, "npc")</code> resolves to
 <code>v * bounding_box_dimension</code>. So <code>spacing = 0.08</code>
-is 8% of the bbox on every shape at every scale, automatically.</p>
-<p>The consequence for data shapes: pattern spacing is consistent across
-all shape types and sizes. The legend key is a deliberate exception —
-see below.</p>
+is 8% of the bbox on every shape, automatically.</p>
+<p><strong>The known failure of this model:</strong> two shapes with
+very different physical sizes — a large US state and a small one, a tall
+bar and a short bar — receive very different absolute dot counts and
+line frequencies with the same <code>pattern_spacing</code>. The spacing
+is consistent <em>relative to each shape’s own bbox</em>, but not
+consistent in physical (device-pixel or mm) terms across shapes. The
+dots pattern is especially punishing because count differences read
+immediately.</p>
+</div>
+<div class="section level3">
+<h3 id="target-implementation-0-6-0">Target implementation (0.6.0)<a class="anchor" aria-label="anchor" href="#target-implementation-0-6-0"></a>
+</h3>
+<p>Pattern spacing will be in <strong>millimetres</strong>.
+<code>pattern_spacing = 5</code> will mean “5mm between line centres” or
+“5mm between dot centres” everywhere — bar, tile, polygon, sf geometry,
+violin, density curve, and legend key. Grid resolves millimetres to
+device pixels at draw time, independently of viewport size. This
+produces physically consistent patterns across all shapes.</p>
+<p><strong>Why mm, not npc?</strong> npc resolves relative to the
+current viewport’s pixel dimensions. A tall bar at 200px and a short bar
+at 40px both get <code>spacing = 0.08 * their_height_px</code> — very
+different physical spacings. mm is resolved by grid against device
+physical dimensions, independently of viewport size.
+<code>spacing = 5mm</code> is 5mm whether the viewport is 200px or
+40px.</p>
+<p><strong>Implementation constraint:</strong> <code>mm → npc</code>
+conversion must happen inside a <code>makeContent</code> method — a grid
+callback that fires at draw time when the correct viewport is active. It
+cannot happen in the pattern function body, which executes before the
+shape’s viewport is pushed. Pattern functions will construct a custom
+<code>gTree</code> (<code>DotPatternTree</code>,
+<code>LinePatternTree</code>) that defers conversion to
+<code>makeContent</code>. See
+<code>specs/SPEC_physical_unit_spacing.md</code>.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="legend-key-spacing-is-geometry-derived-not-data-derived">Legend key spacing is geometry-derived, not data-derived<a class="anchor" aria-label="anchor" href="#legend-key-spacing-is-geometry-derived-not-data-derived"></a>
+<h2 id="legend-key-spacing">Legend key spacing<a class="anchor" aria-label="anchor" href="#legend-key-spacing"></a>
 </h2>
 <p>The legend key communicates pattern <em>identity</em> — what type of
-pattern is this? — not pattern <em>density</em>. A sparse hatch
-(<code>pattern_spacing = 0.2</code>) and a dense hatch
-(<code>pattern_spacing = 0.04</code>) both show hatch lines in the
-legend swatch. The number of lines is standardised to approximately 3
-repetitions across the swatch, computed from the swatch geometry:</p>
+pattern is this? — not pattern <em>density</em>. A sparse hatch and a
+dense hatch both show hatch lines in the legend swatch. The number of
+lines is standardised to approximately 3 repetitions across the
+swatch:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">TARGET_REPS</span>    <span class="op">&lt;-</span> <span class="fl">3L</span></span>
-<span><span class="va">swatch_npc</span>     <span class="op">&lt;-</span> <span class="fl">0.9</span>   <span class="co"># swatch fills 90% of the key</span></span>
+<span><span class="va">swatch_npc</span>     <span class="op">&lt;-</span> <span class="fl">0.9</span></span>
 <span><span class="va">legend_spacing</span> <span class="op">&lt;-</span> <span class="va">swatch_npc</span> <span class="op">/</span> <span class="va">TARGET_REPS</span>   <span class="co"># = 0.3</span></span></code></pre></div>
-<p>This is not a fudge factor — it is geometry.
-<code>legend_spacing</code> is derived from the swatch dimensions and a
-transparent design constant (<code>TARGET_REPS</code>) with a clear
-meaning: how many pattern repetitions appear in the legend key. The
-user’s <code>pattern_spacing</code> value is intentionally not used in
-the legend because legend density is not a user-controlled variable. Dot
-radius (<code>pattern_size</code>) and angle
-(<code>pattern_angle</code>) are still passed through from user settings
-— those describe pattern <em>appearance</em>, not density.</p>
-<p><strong>The rule:</strong> pattern functions themselves must never
+<p>The user’s <code>pattern_spacing</code> value is intentionally not
+used in the legend. <code>pattern_size</code> and
+<code>pattern_angle</code> are passed through — those describe pattern
+<em>appearance</em>, not density.</p>
+<p><strong>In 0.6.0 (mm model):</strong> the legend will automatically
+be correct without any special-casing.
+<code>pattern_spacing = 5mm</code> resolves to 5mm in the legend key
+viewport just as it does in the data shape viewport — a small key gets
+fewer repetitions (because it is physically smaller), which is correct
+and expected. The <code>TARGET_REPS</code> override will be removed.</p>
+<p><strong>The rule (current):</strong> pattern functions must never
 adjust their parameters based on rendering context. Only
 <code>draw_key_pattern</code> may deviate from user parameters, only for
-<code>pattern_spacing</code>, and only with this geometry-derived
-value.</p>
+<code>pattern_spacing</code>, and only with the geometry-derived value
+above.</p>
 </div>
 <div class="section level2">
 <h2 id="pattern-functions-are-pure">Pattern functions are pure<a class="anchor" aria-label="anchor" href="#pattern-functions-are-pure"></a>
@@ -116,45 +168,46 @@ value.</p>
 <p>Pattern functions <code>fn(x, y, width, height, gp, params)</code>
 have no side effects and make no assumptions about rendering context
 beyond what is passed to them. They must not inspect global state,
-device dimensions, or parent viewport dimensions (beyond what grid’s
-normal npc resolution provides).</p>
-<p><strong>Dot radius must use <code>"snpc"</code>, not
-<code>"npc"</code>.</strong> <code>unit(r, "npc")</code> resolves using
-the x-axis of the viewport only, so dot size scales with viewport width
-and is inconsistent across shapes with different widths.
-<code>unit(r, "snpc")</code> resolves to a fraction of
-<code>min(viewport_width_px, viewport_height_px)</code>, ensuring the
-radius is equal in x and y device pixels on any viewport shape. This is
-the correct unit for dot radius.</p>
-<p>Note: the primary dot placement bug (bottom-left grid anchoring) was
-a <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq()</a></code> issue — the grid was not centred — not a radius
-unit issue. Both are fixed together. The <code>"snpc"</code> change is a
-correctness improvement; the grid centering is the actual placement bug
-fix.</p>
+device dimensions, or parent viewport dimensions.</p>
+<p><strong>Dot radius must not use <code>"npc"</code>.</strong>
+<code>unit(r, "npc")</code> resolves using the x-axis of the viewport
+only, so dot size scales with viewport width and produces ovals on
+non-square viewports. In the current implementation dot radius uses
+<code>"snpc"</code>
+(<code>min(viewport_width_px, viewport_height_px)</code>), which gives a
+consistent radius in x and y on any viewport shape. In the 0.6.0 mm
+model, dot radius will be in <code>"mm"</code> — physically circular on
+all devices at all scales.</p>
 </div>
 <div class="section level2">
-<h2 id="diagnostic-checklist-for-legend-rendering-issues">Diagnostic checklist for legend rendering issues<a class="anchor" aria-label="anchor" href="#diagnostic-checklist-for-legend-rendering-issues"></a>
+<h2 id="diagnostic-checklist-for-pattern-rendering-issues">Diagnostic checklist for pattern rendering issues<a class="anchor" aria-label="anchor" href="#diagnostic-checklist-for-pattern-rendering-issues"></a>
 </h2>
-<p>If the legend swatch looks wrong (too dense, too sparse, wrong angle,
-etc.), check in this order:</p>
+<p>If patterns look wrong (wrong density, oval dots, legend mismatch),
+check in this order:</p>
 <ol style="list-style-type: decimal">
-<li><p><strong>Is <code>pattern_spacing</code> viewport-relative in the
-pattern function?</strong> There must be no <code>bbox_scale</code>, no
-<code>sqrt(width * height)</code>, no division by panel dimensions. If
-present, remove it.</p></li>
+<li><p><strong>Are dots oval instead of circular?</strong> Dot radius
+must use <code>"snpc"</code> (current) or <code>"mm"</code> (0.6.0),
+never <code>"npc"</code>. <code>unit(r, "npc")</code> resolves
+anisotropically on non-square viewports.</p></li>
+<li><p><strong>Is density inconsistent across shapes of different
+sizes?</strong> This is a known limitation of the current bbox-relative
+model. It will be fixed in 0.6.0. Workaround: use
+<code>pattern_spacing</code> mapped per-row via
+<code>aes(pattern_spacing = ...)</code> to manually compensate, or wait
+for 0.6.0.</p></li>
 <li><p><strong>Is <code>draw_key_pattern</code> passing
 <code>width = 0.9, height = 0.9</code>?</strong> It should be — verify
-that line 45 of <code>aaa_draw_key.R</code> still reads
 <code>pattern_fn(x = 0.05, y = 0.05, width = 0.9, height = 0.9, ...)</code>.</p></li>
 <li><p><strong>Is <code>legend_params$pattern_spacing</code> set to
-<code>swatch_npc / TARGET_REPS</code>?</strong> It must be. The user’s
-<code>pattern_spacing</code> is intentionally not used in the legend. If
-it has been replaced with a pass-through or a different multiplier,
-restore the geometry-derived computation. <code>pattern_size</code> and
-<code>pattern_angle</code> ARE passed through from user data.</p></li>
-<li><p><strong>Is the legend key itself sized correctly by
-ggplot2?</strong> Rarely the issue. Checkable with
-<code>theme(legend.key.size = unit(1, "cm"))</code>.</p></li>
+<code>swatch_npc / TARGET_REPS</code>?</strong> The user’s
+<code>pattern_spacing</code> is intentionally not used in the legend.
+<code>pattern_size</code> and <code>pattern_angle</code> ARE passed
+through.</p></li>
+<li><p><strong>Is there a <code>bbox_scale</code>,
+<code>sqrt(width * height)</code>, or panel-dimension division in a
+pattern function?</strong> Remove it. Pattern functions receive
+bbox-normalised coordinates; they must not apply additional
+scaling.</p></li>
 </ol>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

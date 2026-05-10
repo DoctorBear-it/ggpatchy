@@ -13,7 +13,7 @@ scale_pattern_discrete()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -121,7 +121,10 @@ Map <code>pattern</code> to a discrete variable using <code><a href="scale_patte
 geoms accept:</p><dl><dt><code>pattern</code></dt>
 <dd><p>Character name of the pattern. One of <code>"none"</code>,
 <code>"hatch"</code>, <code>"crosshatch"</code>, <code>"horizontal"</code>, <code>"vertical"</code>, <code>"dots"</code>,
-<code>"weave"</code>, or a custom pattern registered with <code><a href="register_pattern.html">register_pattern()</a></code>.</p></dd>
+<code>"weave"</code>, or a custom pattern registered with <code><a href="register_pattern.html">register_pattern()</a></code>.
+Each base pattern (except <code>"none"</code>) also has <code>_dense</code> and <code>_sparse</code>
+variants (e.g. <code>"hatch_dense"</code>, <code>"dots_sparse"</code>) for pre-set tighter
+or looser spacing.</p></dd>
 
 <dt><code>pattern_colour</code></dt>
 <dd><p>Colour of pattern lines/dots. Default <code>"black"</code>.</p></dd>

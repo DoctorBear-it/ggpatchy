@@ -13,7 +13,7 @@ values are matched positionally to levels."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,10 +58,12 @@ values are matched positionally to levels.</p>
 
 
 <dl><dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>Named or unnamed character vector of pattern names. Valid
-built-in patterns: <code>"none"</code>, <code>"hatch"</code>, <code>"crosshatch"</code>, <code>"horizontal"</code>,
-<code>"vertical"</code>, <code>"dots"</code>, <code>"weave"</code>. You can also supply names of custom
-patterns registered via <code><a href="register_pattern.html">register_pattern()</a></code>.</p></dd>
+<dd><p>Named or unnamed character vector of pattern names. Built-in
+base patterns: <code>"none"</code>, <code>"hatch"</code>, <code>"crosshatch"</code>, <code>"horizontal"</code>,
+<code>"vertical"</code>, <code>"dots"</code>, <code>"weave"</code>. Each base pattern (except <code>"none"</code>)
+also has <code>_dense</code> and <code>_sparse</code> variants (e.g. <code>"hatch_dense"</code>,
+<code>"crosshatch_sparse"</code>) that use a pre-set tighter or looser spacing.
+Custom patterns registered via <code><a href="register_pattern.html">register_pattern()</a></code> are also accepted.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

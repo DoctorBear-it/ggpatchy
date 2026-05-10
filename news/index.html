@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,17 @@
       <small>Source: <a href="https://github.com/DoctorBear-it/ggpatchy/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="ggpatchy-050">ggpatchy 0.5.0<a class="anchor" aria-label="anchor" href="#ggpatchy-050"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
+<ul><li>Named density variants for all six base patterns: <code>hatch_dense</code>, <code>hatch_sparse</code>, <code>crosshatch_dense</code>, <code>crosshatch_sparse</code>, <code>horizontal_dense</code>, <code>horizontal_sparse</code>, <code>vertical_dense</code>, <code>vertical_sparse</code>, <code>dots_dense</code>, <code>dots_sparse</code>, <code>weave_dense</code>, <code>weave_sparse</code>. Use these in place of any base pattern name to get a predictably tighter or looser spacing without setting <code>pattern_spacing</code> manually. Explicit <code>pattern_spacing</code> values still override the variant default.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-changes-0-5-0">Internal changes<a class="anchor" aria-label="anchor" href="#internal-changes-0-5-0"></a></h3>
+<ul><li>All built-in pattern functions now share a single <code>.PATTERN_SPACING_DEFAULT</code> constant (<code>0.08</code>). <code>dots</code> (previously <code>0.1</code>) and <code>weave</code> (previously <code>0.07</code>) have been harmonised to this value (shipped in v0.4.2).</li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="ggpatchy-041">ggpatchy 0.4.1<a class="anchor" aria-label="anchor" href="#ggpatchy-041"></a></h2>
 <div class="section level3">

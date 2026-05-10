@@ -1,5 +1,27 @@
 # Changelog
 
+## ggpatchy 0.5.0
+
+### New features
+
+- Named density variants for all six base patterns: `hatch_dense`,
+  `hatch_sparse`, `crosshatch_dense`, `crosshatch_sparse`,
+  `horizontal_dense`, `horizontal_sparse`, `vertical_dense`,
+  `vertical_sparse`, `dots_dense`, `dots_sparse`, `weave_dense`,
+  `weave_sparse`. Use these in place of any base pattern name to get a
+  predictably tighter or looser spacing without setting
+  `pattern_spacing` manually. Explicit `pattern_spacing` values still
+  override the variant default.
+
+### Internal changes
+
+- All built-in pattern functions now share a single
+  `.PATTERN_SPACING_DEFAULT` constant (`0.08`). `dots` (previously
+  `0.1`) and `weave` (previously `0.07`) have been harmonised to this
+  value (shipped in v0.4.2).
+
+------------------------------------------------------------------------
+
 ## ggpatchy 0.4.1
 
 ### Improvements
