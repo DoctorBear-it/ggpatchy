@@ -9,6 +9,11 @@
 #' @importFrom grid viewport unit gpar nullGrob grobTree polylineGrob circleGrob
 NULL
 
+# Package-level default for pattern_spacing.  All built-in pattern functions
+# fall back to this value when pattern_spacing is NULL.  Named density
+# variants (hatch_dense, etc.) are expressed as multiples of this constant.
+.PATTERN_SPACING_DEFAULT <- 0.08
+
 # ---- Internal pattern registry -----------------------------------------
 
 .pattern_registry <- new.env(parent = emptyenv())
@@ -280,7 +285,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
   # hatch — single diagonal lines (default 45°)
   register_pattern("hatch", function(x, y, width, height, gp, params) {
     angle   <- params$pattern_angle   %||% 45
-    spacing <- params$pattern_spacing %||% 0.08
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
@@ -293,7 +298,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
   # crosshatch — two sets of lines at 90° to each other
   register_pattern("crosshatch", function(x, y, width, height, gp, params) {
     angle   <- params$pattern_angle   %||% 45
-    spacing <- params$pattern_spacing %||% 0.08
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
@@ -307,7 +312,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
 
   # horizontal — flat lines (angle fixed at 0°; name defines orientation)
   register_pattern("horizontal", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% 0.08
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
@@ -319,7 +324,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
 
   # vertical — straight-up lines (angle fixed at 90°; name defines orientation)
   register_pattern("vertical", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% 0.08
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 1,
                           lty = "solid")
@@ -332,7 +337,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
   # dots — grid of small circles; positions filtered to polygon interior when
   # poly_x/poly_y are supplied.
   register_pattern("dots", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% 0.1
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     size    <- params$pattern_size    %||% 0.35
     dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
 
@@ -384,7 +389,7 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
   # weave — horizontal + diagonal for a woven look (angles fixed; composite
   # structure defines the pattern, not a single orientation angle)
   register_pattern("weave", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% 0.07
+    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
     line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
                           lwd = gp$pattern_linewidth %||% 0.8,
                           lty = "solid")
