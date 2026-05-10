@@ -159,15 +159,6 @@ test_that("polygon-pattern-hatch-triangle clips hatch to triangle interior", {
   vdiffr::expect_doppelganger("polygon-pattern-hatch-triangle", p)
 })
 
-test_that("sf-pattern-hatch-nc clips hatch to county boundaries", {
-  skip_if_not_installed("sf")
-  nc      <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
-  nc$pattern <- rep(c("hatch", "crosshatch", "dots"), length.out = nrow(nc))
-  p <- ggplot2::ggplot(nc) +
-    geom_sf_pattern(ggplot2::aes(pattern = pattern), fill = "white")
-  vdiffr::expect_doppelganger("sf-pattern-hatch-nc", p)
-})
-
 # ---- scale functions -------------------------------------------------------
 
 test_that("scale_pattern_discrete cycles correctly", {

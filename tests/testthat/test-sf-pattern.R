@@ -159,3 +159,55 @@ test_that("geom_sf_pattern multipolygon dots renders correctly", {
     theme_minimal()
   vdiffr::expect_doppelganger("sf-pattern-multipolygon-dots", p)
 })
+
+test_that("geom_sf_pattern nc counties hatch/crosshatch/dots renders correctly", {
+  skip_if_not_installed("sf")
+  nc         <- sf::st_read(system.file("shape/nc.shp", package = "sf"),
+                            quiet = TRUE)
+  nc$pattern <- rep(c("hatch", "crosshatch", "dots"), length.out = nrow(nc))
+  p <- ggplot2::ggplot(nc) +
+    geom_sf_pattern(ggplot2::aes(pattern = pattern), fill = "white") +
+    scale_pattern_identity(guide = "legend") +
+    theme_minimal()
+  vdiffr::expect_doppelganger("sf-pattern-hatch-nc", p)
+})
+
+test_that("geom_sf_pattern us states choropleth fill+pattern renders correctly", {
+  skip_if_not_installed("sf")
+  skip_if_not_installed("spData")
+
+  # Exact code from vignettes/mapping-with-patterns.Rmd — "US states" chunk.
+  # Fix a known typo in the REGION factor level
+  us <- spData::us_states
+  levels(us$REGION)[levels(us$REGION) == "Norteast"] <- "Northeast"
+
+  p <- ggplot2::ggplot(us) +
+    geom_sf_pattern(
+      ggplot2::aes(fill = total_pop_15, pattern = REGION),
+      pattern_colour    = "grey20",
+      pattern_linewidth = 0.45,
+      pattern_spacing   = 0.09
+    ) +
+    scale_pattern_manual(
+      values = c(
+        Midwest   = "hatch",
+        Northeast = "crosshatch",
+        South     = "dots",
+        West      = "vertical"
+      ),
+      name = "Region"
+    ) +
+    ggplot2::scale_fill_distiller(
+      palette   = "Blues",
+      direction = 1,
+      name      = "Population (2015)",
+      labels    = scales::comma
+    ) +
+    ggplot2::labs(
+      title    = "US states",
+      subtitle = "Fill: 2015 population  ·  Pattern: Census region"
+    ) +
+    ggplot2::theme_minimal()
+
+  vdiffr::expect_doppelganger("sf-pattern-us-states-choropleth", p)
+})
