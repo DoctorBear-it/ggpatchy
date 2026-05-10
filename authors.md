@@ -11,12 +11,12 @@ Source:
 [`DESCRIPTION`](https://github.com/DoctorBear-it/ggpatchy/blob/main/DESCRIPTION)
 
 Barrett T (2026). *ggpatchy: Pattern Fill Overlays for 'ggplot2' Geoms*.
-R package version 0.4.1, <https://github.com/DoctorBear-it/ggpatchy>.
+R package version 0.4.2, <https://github.com/DoctorBear-it/ggpatchy>.
 
     @Manual{,
       title = {ggpatchy: Pattern Fill Overlays for 'ggplot2' Geoms},
       author = {Timothy Barrett},
       year = {2026},
-      note = {R package version 0.4.1},
+      note = {R package version 0.4.2},
       url = {https://github.com/DoctorBear-it/ggpatchy},
     }
