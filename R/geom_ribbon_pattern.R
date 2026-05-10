@@ -50,9 +50,9 @@ GeomRibbonPattern <- ggplot2::ggproto(
     pattern                  = "none",
     pattern_colour           = "black",
     pattern_linewidth        = 1,
-    pattern_spacing          = 0.08,
+    pattern_spacing          = 5,
     pattern_angle            = 45,
-    pattern_size             = 0.4,
+    pattern_size             = 0.5,
     pattern_contrast_check   = 0,
     pattern_contrast_correct = FALSE
   ),
@@ -133,9 +133,9 @@ GeomRibbonPattern <- ggplot2::ggproto(
       pattern_linewidth = data$pattern_linewidth[1] %||% 1
     )
     params <- list(
-      pattern_spacing = data$pattern_spacing[1] %||% 0.08,
+      pattern_spacing = data$pattern_spacing[1] %||% 5,
       pattern_angle   = data$pattern_angle[1]   %||% 45,
-      pattern_size    = data$pattern_size[1]     %||% 0.4,
+      pattern_size    = data$pattern_size[1]     %||% 0.5,
       poly_x = (poly_x - bx) / bw,
       poly_y = (poly_y - by) / bh
     )
@@ -188,11 +188,14 @@ GeomAreaPattern <- ggplot2::ggproto(
 #'     or looser spacing.}
 #'   \item{`pattern_colour`}{Colour of pattern lines/dots. Default `"black"`.}
 #'   \item{`pattern_linewidth`}{Line width for line-based patterns. Default `1`.}
-#'   \item{`pattern_spacing`}{Spacing between pattern elements as a fraction
-#'     of the ribbon bounding box (npc units). Default `0.08`.}
+#'   \item{`pattern_spacing`}{Spacing between pattern elements in millimetres.
+#'     Default `5`. Smaller values produce denser patterns; larger values produce
+#'     sparser patterns. Named density variants (e.g. \code{"hatch_dense"}) bake
+#'     in a pre-set spacing multiplier but still respect explicit
+#'     \code{pattern_spacing} values.}
 #'   \item{`pattern_angle`}{Angle in degrees for hatch patterns. Default `45`.}
-#'   \item{`pattern_size`}{Dot diameter in mm for the `"dots"` pattern.
-#'     Default `0.4`.}
+#'   \item{`pattern_size`}{Dot radius in millimetres for the \code{"dots"}
+#'     pattern. Default \code{0.5}.}
 #' }
 #'
 #' @section Limitations:

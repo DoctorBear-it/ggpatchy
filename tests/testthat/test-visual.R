@@ -247,7 +247,7 @@ test_that("geom_ribbon_pattern faceted renders correctly", {
 # ---- per-row pattern parameter mapping snapshots ---------------------------
 
 test_that("geom_col_pattern with mapped pattern_spacing renders correctly", {
-  df <- data.frame(g = c("A", "B"), v = c(2, 3), ps = c(0.03, 0.15))
+  df <- data.frame(g = c("A", "B"), v = c(2, 3), ps = c(2.5, 10))
   p <- ggplot(df, aes(g, v, fill = g, pattern_spacing = ps)) +
     geom_col_pattern(pattern = "hatch") +
     scale_fill_brewer(palette = "Pastel1") +

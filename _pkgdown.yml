@@ -37,3 +37,8 @@ reference:
     contents:
       - register_pattern
       - list_patterns
+
+  - title: Accessibility
+    desc: Check and correct pattern-to-fill contrast.
+    contents:
+      - pattern_contrast

@@ -19,83 +19,49 @@ authoritative definition of what "correct" looks like. At the default
 readable on a typical chart element. Any deviation from that baseline is
 explicitly the user's choice, made by setting `pattern_spacing` explicitly.
 
-The strongest form of this contract — and the goal of the 0.6.0 release — is
-**physical uniformity across all shapes in the same plot**: a small polygon
-and a large polygon with the same `pattern_spacing` should have the same
-physical distance between hatch lines, the same physical dot size, and the
-same physical dot pitch. Users should never see a map where small counties
-have 2 dots and large counties have 50.
+The strongest form of this contract is **physical uniformity across all shapes
+in the same plot**: a small polygon and a large polygon with the same
+`pattern_spacing` have the same physical distance between hatch lines, the
+same physical dot size, and the same physical dot pitch. Users never see a map
+where small counties have 2 dots and large counties have 50.
 
-## Coordinate system contract (current: bbox-relative; target: mm)
+## Coordinate system contract (mm)
 
-### Current implementation (v0.5.x)
-
-Pattern spacing is **viewport-relative** (bounding-box fraction). `pattern_spacing
-= 0.08` means 8% of the shape's bounding box — whether that shape is a bar,
-tile, polygon, sf geometry, violin, or density curve.
-
-This is not magic. It follows directly from how grid viewports work.
-`clipped_grob()` creates a viewport sized to the bounding box and renders
-pattern grobs as children of that viewport. Inside the viewport, `unit(v,
-"npc")` resolves to `v * bounding_box_dimension`. So `spacing = 0.08` is
-8% of the bbox on every shape, automatically.
-
-**The known failure of this model:** two shapes with very different physical
-sizes — a large US state and a small one, a tall bar and a short bar — receive
-very different absolute dot counts and line frequencies with the same
-`pattern_spacing`. The spacing is consistent *relative to each shape's own
-bbox*, but not consistent in physical (device-pixel or mm) terms across
-shapes. The dots pattern is especially punishing because count differences
-read immediately.
-
-### Target implementation (0.6.0)
-
-Pattern spacing will be in **millimetres**. `pattern_spacing = 5` will mean
-"5mm between line centres" or "5mm between dot centres" everywhere — bar,
-tile, polygon, sf geometry, violin, density curve, and legend key. Grid
-resolves millimetres to device pixels at draw time, independently of viewport
-size. This produces physically consistent patterns across all shapes.
+Pattern spacing is in **millimetres**. `pattern_spacing = 5` means "5mm
+between line centres" or "5mm between dot centres" everywhere — bar, tile,
+polygon, sf geometry, violin, density curve, and legend key. Grid resolves
+millimetres to device pixels at draw time, independently of viewport size.
+This produces physically consistent patterns across all shapes.
 
 **Why mm, not npc?** npc resolves relative to the current viewport's pixel
-dimensions. A tall bar at 200px and a short bar at 40px both get
-`spacing = 0.08 * their_height_px` — very different physical spacings. mm is
-resolved by grid against device physical dimensions, independently of viewport
-size. `spacing = 5mm` is 5mm whether the viewport is 200px or 40px.
+dimensions. A tall bar at 200px and a short bar at 40px would get very
+different physical spacings with the same npc fraction. mm is resolved by grid
+against device physical dimensions, independently of viewport size.
+`spacing = 5mm` is 5mm whether the viewport is 200px or 40px.
 
 **Implementation constraint:** `mm → npc` conversion must happen inside a
 `makeContent` method — a grid callback that fires at draw time when the
 correct viewport is active. It cannot happen in the pattern function body,
 which executes before the shape's viewport is pushed. Pattern functions
-will construct a custom `gTree` (`DotPatternTree`, `LinePatternTree`) that
-defers conversion to `makeContent`. See `specs/SPEC_physical_unit_spacing.md`.
+construct a custom `gTree` (`DotPatternTree`, `LinePatternTree`) that
+defers conversion to `makeContent`. See `specs/SPEC_makecontent_infrastructure.md`.
+
+### Previous model (v0.5.x and earlier)
+
+In prior versions, pattern spacing was **viewport-relative** (bounding-box
+fraction). `pattern_spacing = 0.08` meant 8% of the shape's bounding box.
+This produced different visual densities across shapes of different physical
+sizes — most visibly on choropleth maps where small and large regions received
+different dot counts.
 
 ## Legend key spacing
 
-The legend key communicates pattern *identity* — what type of pattern is
-this? — not pattern *density*. A sparse hatch and a dense hatch both show
-hatch lines in the legend swatch. The number of lines is standardised to
-approximately 3 repetitions across the swatch:
+The legend key communicates pattern *identity* — what type of pattern is this?
+Because `pattern_spacing` is now in mm, the key correctly shows the same
+physical density as the data. No override is needed or applied.
 
-```r
-TARGET_REPS    <- 3L
-swatch_npc     <- 0.9
-legend_spacing <- swatch_npc / TARGET_REPS   # = 0.3
-```
-
-The user's `pattern_spacing` value is intentionally not used in the legend.
-`pattern_size` and `pattern_angle` are passed through — those describe pattern
-*appearance*, not density.
-
-**In 0.6.0 (mm model):** the legend will automatically be correct without any
-special-casing. `pattern_spacing = 5mm` resolves to 5mm in the legend key
-viewport just as it does in the data shape viewport — a small key gets fewer
-repetitions (because it is physically smaller), which is correct and expected.
-The `TARGET_REPS` override will be removed.
-
-**The rule (current):** pattern functions must never adjust their parameters
-based on rendering context. Only `draw_key_pattern` may deviate from user
-parameters, only for `pattern_spacing`, and only with the geometry-derived
-value above.
+`pattern_size` and `pattern_angle` are passed through from user data, as
+they always have been.
 
 ## Pattern functions are pure
 
@@ -104,13 +70,9 @@ and make no assumptions about rendering context beyond what is passed to them.
 They must not inspect global state, device dimensions, or parent viewport
 dimensions.
 
-**Dot radius must not use `"npc"`.** `unit(r, "npc")` resolves using the
-x-axis of the viewport only, so dot size scales with viewport width and
-produces ovals on non-square viewports. In the current implementation dot
-radius uses `"snpc"` (`min(viewport_width_px, viewport_height_px)`), which
-gives a consistent radius in x and y on any viewport shape. In the 0.6.0
-mm model, dot radius will be in `"mm"` — physically circular on all devices
-at all scales.
+**Dot radius uses `"mm"`.** `unit(r, "mm")` is physically circular on all
+devices at all scales. Do not use `"npc"` for dot radius — it resolves using
+the x-axis of the viewport only and produces ovals on non-square viewports.
 
 ## Diagnostic checklist for pattern rendering issues
 
@@ -118,20 +80,20 @@ If patterns look wrong (wrong density, oval dots, legend mismatch), check in
 this order:
 
 1. **Are dots oval instead of circular?**
-   Dot radius must use `"snpc"` (current) or `"mm"` (0.6.0), never `"npc"`.
+   Dot radius must use `"mm"`, never `"npc"`.
    `unit(r, "npc")` resolves anisotropically on non-square viewports.
 
 2. **Is density inconsistent across shapes of different sizes?**
-   This is a known limitation of the current bbox-relative model. It will be
-   fixed in 0.6.0. Workaround: use `pattern_spacing` mapped per-row via
-   `aes(pattern_spacing = ...)` to manually compensate, or wait for 0.6.0.
+   Check that `makeContent.DotPatternTree` and `makeContent.LinePatternTree`
+   are calling `convertWidth` / `convertHeight` inside `makeContent`, not
+   in the pattern function body.
 
 3. **Is `draw_key_pattern` passing `width = 0.9, height = 0.9`?**
    It should be — verify `pattern_fn(x = 0.05, y = 0.05, width = 0.9, height = 0.9, ...)`.
 
-4. **Is `legend_params$pattern_spacing` set to `swatch_npc / TARGET_REPS`?**
-   The user's `pattern_spacing` is intentionally not used in the legend.
-   `pattern_size` and `pattern_angle` ARE passed through.
+4. **Does the legend key look wrong for sparse/dense variants?**
+   In the mm model, the legend shows the same physical spacing as the data —
+   a dense pattern swatch has denser lines. This is correct and expected.
 
 5. **Is there a `bbox_scale`, `sqrt(width * height)`, or panel-dimension
    division in a pattern function?**

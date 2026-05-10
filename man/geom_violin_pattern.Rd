@@ -81,11 +81,14 @@ variants (e.g. \code{"hatch_dense"}, \code{"dots_sparse"}) for pre-set tighter
 or looser spacing.}
 \item{\code{pattern_colour}}{Colour of pattern lines/dots. Default \code{"black"}.}
 \item{\code{pattern_linewidth}}{Line width for line-based patterns. Default \code{1}.}
-\item{\code{pattern_spacing}}{Spacing between pattern elements as a fraction
-of the violin bounding box (npc units). Default \code{0.08}.}
+\item{\code{pattern_spacing}}{Spacing between pattern elements in millimetres.
+Default \code{5}. Smaller values produce denser patterns; larger values produce
+sparser patterns. Named density variants (e.g. \code{"hatch_dense"}) bake
+in a pre-set spacing multiplier but still respect explicit
+\code{pattern_spacing} values.}
 \item{\code{pattern_angle}}{Angle in degrees for hatch patterns. Default \code{45}.}
-\item{\code{pattern_size}}{Dot diameter in mm for the \code{"dots"} pattern.
-Default \code{0.4}.}
+\item{\code{pattern_size}}{Dot radius in millimetres for the \code{"dots"}
+pattern. Default \code{0.5}.}
 }
 }
 
@@ -105,9 +108,9 @@ the requirement explicit.
 pattern overlay. The base violin renders correctly, but the pattern is
 silently skipped. Use \code{coord_flip()} on a vertical violin as a workaround.
 
-\strong{Pattern spacing is viewport-relative.} \code{pattern_spacing = 0.08} means
-8\% of the violin's bounding box, so visual density is consistent across
-violins of any width.
+\strong{Pattern spacing is in millimetres.} \code{pattern_spacing = 5} means 5mm
+between pattern elements regardless of violin size, so density is
+physically consistent across violins of any width.
 }
 
 \examples{

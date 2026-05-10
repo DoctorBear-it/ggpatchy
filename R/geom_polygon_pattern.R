@@ -40,9 +40,9 @@ GeomPolygonPattern <- ggplot2::ggproto(
     pattern                  = "none",
     pattern_colour           = "black",
     pattern_linewidth        = 1,
-    pattern_spacing          = 0.08,
+    pattern_spacing          = 5,
     pattern_angle            = 45,
-    pattern_size             = 0.4,
+    pattern_size             = 0.5,
     pattern_contrast_check   = 0,
     pattern_contrast_correct = FALSE
   ),
@@ -116,9 +116,9 @@ GeomPolygonPattern <- ggplot2::ggproto(
         pattern_linewidth = grp$pattern_linewidth[1] %||% 1
       )
       params <- list(
-        pattern_spacing = grp$pattern_spacing[1] %||% 0.08,
+        pattern_spacing = grp$pattern_spacing[1] %||% 5,
         pattern_angle   = grp$pattern_angle[1]   %||% 45,
-        pattern_size    = grp$pattern_size[1]     %||% 0.4,
+        pattern_size    = grp$pattern_size[1]     %||% 0.5,
         poly_x = (grp$x - bx) / bw,
         poly_y = (grp$y - by) / bh
       )

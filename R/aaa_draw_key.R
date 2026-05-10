@@ -33,21 +33,18 @@ draw_key_pattern <- function(data, params, size) {
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 
-  # Legend spacing is geometry-derived, not data-derived. The legend
-  # communicates pattern *identity* (what kind of pattern is this?), not
-  # pattern *density* (how sparse did the user set it?). TARGET_REPS
-  # controls how many pattern repetitions appear in the swatch — enough
-  # to read the pattern type clearly, few enough to avoid visual noise.
-  # pattern_angle and pattern_size are still passed from user data because
-  # those describe appearance, not density.
-  TARGET_REPS    <- 3L
-  swatch_npc     <- 0.9
-  legend_spacing <- swatch_npc / TARGET_REPS
+  # Compute spacing so the pattern always shows TARGET_REPS repetitions in
+  # the swatch. The user's mm spacing value is intentionally not used here —
+  # per-row mapped spacing governs geometry; the legend swatch must be legible
+  # at any key size. `size` is the key dimensions in mm (ggplot2 convention).
+  swatch_fraction <- 0.9
+  TARGET_REPS     <- 3L
+  legend_spacing  <- min(size) * swatch_fraction / TARGET_REPS
 
   legend_params <- list(
     pattern_spacing   = legend_spacing,
     pattern_angle     = null_na_default(data$pattern_angle,     45),
-    pattern_size      = null_na_default(data$pattern_size,      0.35),
+    pattern_size      = null_na_default(data$pattern_size,      0.5),
     pattern_linewidth = null_na_default(data$pattern_linewidth, 1)
   )
 

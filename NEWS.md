@@ -1,3 +1,44 @@
+# ggpatchy 0.6.0
+
+## Breaking changes
+
+- `pattern_spacing` now specifies spacing in **millimetres** (previously a
+  dimensionless fraction of each shape's bounding box). The default changes
+  from `0.08` to `5` mm. Update existing code that sets `pattern_spacing`
+  explicitly: `0.08` → `5`, `0.04` (dense) → `2.5`, `0.16` (sparse) → `10`,
+  or similar.
+- `pattern_size` for the `"dots"` pattern is now the dot **radius** in
+  millimetres (previously dimensionless). Default changes from `0.4` to
+  `0.5` mm.
+- Legend key pattern density is no longer overridden to a fixed
+  `TARGET_REPS`-based value. The legend now shows the same physical spacing
+  as the data, which means legend swatches for dense patterns will look
+  denser than for sparse patterns. This is correct behaviour.
+
+## Why this change
+
+The previous bounding-box-relative model produced different visual densities
+across shapes of different physical sizes in the same plot — most visibly on
+choropleth maps where small and large regions received wildly different dot
+counts. Millimetre units resolve against device physical dimensions at draw
+time, independently of viewport size, giving uniform density across all
+shapes. See `vignette("design-philosophy")` for full details.
+
+## Interactive resizing
+
+When resizing a plot window interactively, pattern density will appear to
+change as the physical dimensions change. This is correct — `pattern_spacing
+= 5` always means 5mm regardless of window size. For consistent results, set
+chunk `fig.width`/`fig.height` to match your intended `ggsave()` dimensions.
+
+## Internal changes
+
+- `makeContent.DotPatternTree` and `makeContent.LinePatternTree` now convert
+  mm → npc via `grid::convertWidth` / `grid::convertHeight` at draw time
+  inside the active shape viewport (infrastructure introduced in v0.5.x).
+
+---
+
 # ggpatchy 0.5.1
 
 ## New features

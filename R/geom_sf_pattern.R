@@ -60,9 +60,9 @@ GeomSfPattern <- ggplot2::ggproto(
     pattern                  = "none",
     pattern_colour           = "black",
     pattern_linewidth        = 1,
-    pattern_spacing          = 0.08,
+    pattern_spacing          = 5,
     pattern_angle            = 45,
-    pattern_size             = 0.35,
+    pattern_size             = 0.5,
     pattern_contrast_check   = 0,
     pattern_contrast_correct = FALSE
   ),
@@ -142,9 +142,9 @@ GeomSfPattern <- ggplot2::ggproto(
         pattern_linewidth = transformed$pattern_linewidth[i] %||% 1
       )
       params_base <- list(
-        pattern_spacing   = transformed$pattern_spacing[i]   %||% 0.08,
+        pattern_spacing   = transformed$pattern_spacing[i]   %||% 5,
         pattern_angle     = transformed$pattern_angle[i]     %||% 45,
-        pattern_size      = transformed$pattern_size[i]      %||% 0.35,
+        pattern_size      = transformed$pattern_size[i]      %||% 0.5,
         pattern_linewidth = transformed$pattern_linewidth[i] %||% 1
       )
 
@@ -267,10 +267,14 @@ GeomSfPattern <- ggplot2::ggproto(
 #'     or looser spacing.}
 #'   \item{`pattern_colour`}{Colour of pattern lines/dots. Default `"black"`.}
 #'   \item{`pattern_linewidth`}{Line width for line-based patterns. Default `1`.}
-#'   \item{`pattern_spacing`}{Spacing relative to the polygon bounding box
-#'     (npc units). Default `0.08`.}
+#'   \item{`pattern_spacing`}{Spacing between pattern elements in millimetres.
+#'     Default `5`. Smaller values produce denser patterns; larger values produce
+#'     sparser patterns. Named density variants (e.g. \code{"hatch_dense"}) bake
+#'     in a pre-set spacing multiplier but still respect explicit
+#'     \code{pattern_spacing} values.}
 #'   \item{`pattern_angle`}{Angle in degrees for hatch patterns. Default `45`.}
-#'   \item{`pattern_size`}{Dot size for the `"dots"` pattern. Default `0.35`.}
+#'   \item{`pattern_size`}{Dot radius in millimetres for the \code{"dots"}
+#'     pattern. Default \code{0.5}.}
 #' }
 #'
 #' @section Geometry type support:

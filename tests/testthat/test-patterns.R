@@ -99,11 +99,11 @@ test_that("NA in pattern column warns for geom_polygon_pattern", {
 
 test_that("pattern_spacing values survive per-row into panel data", {
   library(ggplot2)
-  df <- data.frame(g = c("A", "B"), v = c(2, 3), ps = c(0.02, 0.15))
+  df <- data.frame(g = c("A", "B"), v = c(2, 3), ps = c(2.5, 10))
   p  <- ggplot(df, aes(g, v, pattern_spacing = ps)) +
     geom_col_pattern(pattern = "hatch")
   panel_data <- ggplot_build(p)$data[[1]]
-  expect_setequal(round(panel_data$pattern_spacing, 4), c(0.02, 0.15))
+  expect_setequal(round(panel_data$pattern_spacing, 4), c(2.5, 10))
 })
 
 test_that("pattern_angle values survive per-row into panel data", {
@@ -122,12 +122,12 @@ test_that("hatch pattern generates more line segments at tighter spacing", {
   count_segs <- function(spacing) {
     g    <- fn(0, 0, 1, 1, gp = base_gp,
                params = list(pattern_spacing = spacing, pattern_angle = 45,
-                             pattern_size = 0.4))
+                             pattern_size = 0.5))
     inner <- grid::makeContent(g$children[[1]])
     pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
-  expect_gt(count_segs(0.03), count_segs(0.20))
+  expect_gt(count_segs(2), count_segs(12))
 })
 
 test_that(".has_clip_path_support() returns logical scalar", {
@@ -141,7 +141,7 @@ test_that("hatch pattern angle changes line direction", {
   base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
   mk <- function(angle) {
     g <- fn(0, 0, 1, 1, gp = base_gp,
-      params = list(pattern_spacing = 0.1, pattern_angle = angle, pattern_size = 0.4))
+      params = list(pattern_spacing = 5, pattern_angle = angle, pattern_size = 0.5))
     grid::makeContent(g$children[[1]])
   }
   horiz <- mk(0)
@@ -166,7 +166,7 @@ test_that("hatch_dense produces more line segments than hatch at default spacing
   fn_base  <- get_pattern_fn("hatch")
   fn_dense <- get_pattern_fn("hatch_dense")
   base_gp  <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
-  params   <- list(pattern_angle = 45, pattern_size = 0.35)
+  params   <- list(pattern_angle = 45, pattern_size = 0.5)
 
   count_segs <- function(fn) {
     g     <- fn(0, 0, 1, 1, gp = base_gp, params = params)
@@ -181,7 +181,7 @@ test_that("hatch_sparse produces fewer line segments than hatch at default spaci
   fn_base   <- get_pattern_fn("hatch")
   fn_sparse <- get_pattern_fn("hatch_sparse")
   base_gp   <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
-  params    <- list(pattern_angle = 45, pattern_size = 0.35)
+  params    <- list(pattern_angle = 45, pattern_size = 0.5)
 
   count_segs <- function(fn) {
     g     <- fn(0, 0, 1, 1, gp = base_gp, params = params)
@@ -198,15 +198,16 @@ test_that("explicit pattern_spacing overrides the variant default", {
   base_gp  <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
 
   count_segs <- function(fn, spacing) {
-    g  <- fn(0, 0, 1, 1, gp = base_gp,
-             params = list(pattern_spacing = spacing,
-                           pattern_angle = 45, pattern_size = 0.35))
-    pl <- g$children[[1]]
+    g     <- fn(0, 0, 1, 1, gp = base_gp,
+                params = list(pattern_spacing = spacing,
+                              pattern_angle = 45, pattern_size = 0.5))
+    inner <- grid::makeContent(g$children[[1]])
+    pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
   # When spacing is supplied explicitly, hatch_dense and hatch produce
   # identical output — the variant's baked-in default is not used.
-  expect_equal(count_segs(fn_dense, 0.1), count_segs(fn_base, 0.1))
+  expect_equal(count_segs(fn_dense, 5), count_segs(fn_base, 5))
 })
 
 test_that("density variants work end-to-end in a ggplot", {
@@ -314,4 +315,49 @@ test_that("pattern_contrast_check = FALSE (default) never warns", {
       pattern_colour = "black"
     )
   expect_no_warning(ggplotGrob(p))
+})
+
+# ---- Physical unit (mm) spacing tests --------------------------------------
+
+test_that("dots are physically uniform across shapes of different bbox sizes", {
+  fn <- get_pattern_fn("dots")
+  base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
+  params  <- list(pattern_spacing = 5, pattern_size = 0.5)
+
+  count_dots <- function(vp_width_mm, vp_height_mm) {
+    tmp <- tempfile(fileext = ".pdf")
+    on.exit(unlink(tmp))
+    pdf(tmp, width = vp_width_mm / 25.4, height = vp_height_mm / 25.4)
+    grid::grid.newpage()
+    tree <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    rendered <- grid::makeContent(tree$children[[1]])
+    dots_grob <- rendered$children[[1]]
+    dev.off()
+    if (inherits(dots_grob, "null")) 0L else length(dots_grob$x)
+  }
+
+  small_n <- count_dots(20, 20)
+  large_n <- count_dots(80, 80)
+  expect_gt(large_n, small_n)
+})
+
+test_that("line patterns use mm spacing — larger viewport produces more lines", {
+  fn      <- get_pattern_fn("hatch")
+  base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
+  params  <- list(pattern_spacing = 5, pattern_angle = 45, pattern_size = 0.5)
+
+  count_lines <- function(vp_width_mm, vp_height_mm) {
+    tmp <- tempfile(fileext = ".pdf")
+    on.exit(unlink(tmp))
+    pdf(tmp, width = vp_width_mm / 25.4, height = vp_height_mm / 25.4)
+    grid::grid.newpage()
+    tree     <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    rendered <- grid::makeContent(tree$children[[1]])
+    line_grob <- rendered$children[[1]]
+    dev.off()
+    if (inherits(line_grob, "null")) 0L
+    else sum(is.na(as.numeric(line_grob$x)))
+  }
+
+  expect_gt(count_lines(80, 80), count_lines(20, 20))
 })

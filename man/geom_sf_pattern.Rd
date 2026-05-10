@@ -64,10 +64,14 @@ variants (e.g. \code{"hatch_dense"}, \code{"dots_sparse"}) for pre-set tighter
 or looser spacing.}
 \item{\code{pattern_colour}}{Colour of pattern lines/dots. Default \code{"black"}.}
 \item{\code{pattern_linewidth}}{Line width for line-based patterns. Default \code{1}.}
-\item{\code{pattern_spacing}}{Spacing relative to the polygon bounding box
-(npc units). Default \code{0.08}.}
+\item{\code{pattern_spacing}}{Spacing between pattern elements in millimetres.
+Default \code{5}. Smaller values produce denser patterns; larger values produce
+sparser patterns. Named density variants (e.g. \code{"hatch_dense"}) bake
+in a pre-set spacing multiplier but still respect explicit
+\code{pattern_spacing} values.}
 \item{\code{pattern_angle}}{Angle in degrees for hatch patterns. Default \code{45}.}
-\item{\code{pattern_size}}{Dot size for the \code{"dots"} pattern. Default \code{0.35}.}
+\item{\code{pattern_size}}{Dot radius in millimetres for the \code{"dots"}
+pattern. Default \code{0.5}.}
 }
 }
 
