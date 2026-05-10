@@ -118,12 +118,13 @@ test_that("pattern_angle values survive per-row into panel data", {
 test_that("hatch pattern generates more line segments at tighter spacing", {
   fn     <- get_pattern_fn("hatch")
   base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
-  # clipped_grob → gTree; children[[1]] is the polylineGrob
+  # clipped_grob wraps a LinePatternTree; makeContent fires it to get the polylineGrob
   count_segs <- function(spacing) {
-    g  <- fn(0, 0, 1, 1, gp = base_gp,
-             params = list(pattern_spacing = spacing, pattern_angle = 45,
-                           pattern_size = 0.4))
-    pl <- g$children[[1]]
+    g    <- fn(0, 0, 1, 1, gp = base_gp,
+               params = list(pattern_spacing = spacing, pattern_angle = 45,
+                             pattern_size = 0.4))
+    inner <- grid::makeContent(g$children[[1]])
+    pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
   expect_gt(count_segs(0.03), count_segs(0.20))
@@ -138,8 +139,11 @@ test_that(".has_clip_path_support() returns logical scalar", {
 test_that("hatch pattern angle changes line direction", {
   fn      <- get_pattern_fn("hatch")
   base_gp <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
-  mk <- function(angle) fn(0, 0, 1, 1, gp = base_gp,
-    params = list(pattern_spacing = 0.1, pattern_angle = angle, pattern_size = 0.4))
+  mk <- function(angle) {
+    g <- fn(0, 0, 1, 1, gp = base_gp,
+      params = list(pattern_spacing = 0.1, pattern_angle = angle, pattern_size = 0.4))
+    grid::makeContent(g$children[[1]])
+  }
   horiz <- mk(0)
   diag  <- mk(45)
   # y coordinates of the first non-NA run differ between orientations
@@ -165,8 +169,9 @@ test_that("hatch_dense produces more line segments than hatch at default spacing
   params   <- list(pattern_angle = 45, pattern_size = 0.35)
 
   count_segs <- function(fn) {
-    g  <- fn(0, 0, 1, 1, gp = base_gp, params = params)
-    pl <- g$children[[1]]
+    g     <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    inner <- grid::makeContent(g$children[[1]])
+    pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
   expect_gt(count_segs(fn_dense), count_segs(fn_base))
@@ -179,8 +184,9 @@ test_that("hatch_sparse produces fewer line segments than hatch at default spaci
   params    <- list(pattern_angle = 45, pattern_size = 0.35)
 
   count_segs <- function(fn) {
-    g  <- fn(0, 0, 1, 1, gp = base_gp, params = params)
-    pl <- g$children[[1]]
+    g     <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    inner <- grid::makeContent(g$children[[1]])
+    pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
   expect_gt(count_segs(fn_base), count_segs(fn_sparse))

@@ -7,6 +7,7 @@
 
 #' @importFrom grid linesGrob pointsGrob rectGrob gTree gList clipGrob
 #' @importFrom grid viewport unit gpar nullGrob grobTree polylineGrob circleGrob
+#' @importFrom grid makeContent setChildren
 NULL
 
 # Package-level default for pattern_spacing.  All built-in pattern functions
@@ -143,6 +144,108 @@ clipped_grob <- function(x, y, width, height, ...) {
     clip = "on"
   )
   grid::gTree(children = do.call(grid::gList, children), vp = vp)
+}
+
+# ---- makeContent classes for deferred spacing resolution -------------------
+#
+# Pattern functions return gTree objects of class DotPatternTree or
+# LinePatternTree. Grid calls makeContent() on these at draw time, inside the
+# active shape viewport. In this release makeContent reads spacing_npc
+# directly (no unit conversion). PR 6 will swap this to convert mm -> npc via
+# convertWidth/convertHeight at draw time, which requires the viewport to be
+# active — exactly what makeContent guarantees.
+
+#' @export
+makeContent.DotPatternTree <- function(x) {
+  spacing_npc <- x$spacing_npc
+  size_npc    <- x$size_npc
+  dot_gp      <- x$dot_gp
+  poly_x      <- x$poly_x
+  poly_y      <- x$poly_y
+
+  r_npc <- size_npc * spacing_npc / 2
+
+  xs_raw <- seq(0, 1, by = spacing_npc)
+  xs     <- xs_raw - mean(range(xs_raw)) + 0.5
+  ys_raw <- seq(0, 1, by = spacing_npc)
+  ys     <- ys_raw - mean(range(ys_raw)) + 0.5
+
+  if (length(xs) == 0 || length(ys) == 0) {
+    return(grid::setChildren(x, grid::gList(grid::nullGrob())))
+  }
+
+  gc <- expand.grid(x = xs, y = ys)
+
+  if (!is.null(poly_x)) {
+    n <- length(poly_x)
+    if (n > 1 &&
+        abs(poly_x[n] - poly_x[1]) < 1e-10 &&
+        abs(poly_y[n] - poly_y[1]) < 1e-10) {
+      poly_x <- poly_x[-n]
+      poly_y <- poly_y[-n]
+    }
+    inset <- inset_poly(poly_x, poly_y, r_npc)
+    keep  <- pip(gc$x, gc$y, inset$x, inset$y)
+    gc    <- gc[keep, , drop = FALSE]
+  }
+
+  if (nrow(gc) == 0) {
+    return(grid::setChildren(x, grid::gList(grid::nullGrob())))
+  }
+
+  child <- grid::circleGrob(
+    x  = grid::unit(gc$x, "npc"),
+    y  = grid::unit(gc$y, "npc"),
+    r  = grid::unit(r_npc, "npc"),
+    gp = dot_gp
+  )
+  grid::setChildren(x, grid::gList(child))
+}
+
+#' @export
+makeContent.LinePatternTree <- function(x) {
+  spacing_npc         <- x$spacing_npc
+  angle_degs          <- x$angle_degs
+  spacing_multipliers <- x$spacing_multipliers
+  line_gp             <- x$line_gp
+  poly_x              <- x$poly_x
+  poly_y              <- x$poly_y
+
+  if (spacing_npc <= 0) {
+    return(grid::setChildren(x, grid::gList(grid::nullGrob())))
+  }
+
+  line_grobs <- mapply(function(angle, mult) {
+    hatch_lines(
+      angle_deg   = angle,
+      spacing_npc = spacing_npc * mult,
+      gp          = line_gp,
+      poly_x      = poly_x,
+      poly_y      = poly_y
+    )
+  }, angle_degs, spacing_multipliers, SIMPLIFY = FALSE)
+
+  grid::setChildren(x, do.call(grid::gList, line_grobs))
+}
+
+# Factory for line-based pattern gTrees. Called by hatch, crosshatch,
+# horizontal, vertical, and weave pattern functions.
+# angle_degs: numeric vector of hatch angles (one per hatch_lines call).
+# spacing_multipliers: per-angle multipliers applied to spacing_npc.
+make_line_pattern_grob <- function(x, y, width, height,
+                                   angle_degs, spacing_multipliers,
+                                   spacing_npc, line_gp,
+                                   poly_x = NULL, poly_y = NULL) {
+  tree <- grid::gTree(
+    angle_degs          = angle_degs,
+    spacing_multipliers = spacing_multipliers,
+    spacing_npc         = spacing_npc,
+    line_gp             = line_gp,
+    poly_x              = poly_x,
+    poly_y              = poly_y,
+    cl                  = "LinePatternTree"
+  )
+  clipped_grob(x, y, width, height, tree)
 }
 
 # Ray-casting point-in-polygon test. Works for convex and concave simple
@@ -352,122 +455,102 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
 
   # hatch — single diagonal lines (default 45°)
   register_pattern("hatch", function(x, y, width, height, gp, params) {
-    angle   <- params$pattern_angle   %||% 45
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                          lwd = gp$pattern_linewidth %||% 1,
-                          lty = "solid")
-    clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = angle, spacing_npc = spacing, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y)
+    angle       <- params$pattern_angle   %||% 45
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    line_gp     <- grid::gpar(col = gp$pattern_colour %||% "black",
+                               lwd = gp$pattern_linewidth %||% 1,
+                               lty = "solid")
+    make_line_pattern_grob(x, y, width, height,
+      angle_degs          = angle,
+      spacing_multipliers = 1,
+      spacing_npc         = spacing_npc,
+      line_gp             = line_gp,
+      poly_x              = params$poly_x,
+      poly_y              = params$poly_y
     )
   })
 
   # crosshatch — two sets of lines at 90° to each other
   register_pattern("crosshatch", function(x, y, width, height, gp, params) {
-    angle   <- params$pattern_angle   %||% 45
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                          lwd = gp$pattern_linewidth %||% 1,
-                          lty = "solid")
-    clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = angle,      spacing_npc = spacing, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y),
-      hatch_lines(angle_deg = angle + 90, spacing_npc = spacing, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y)
+    angle       <- params$pattern_angle   %||% 45
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    line_gp     <- grid::gpar(col = gp$pattern_colour %||% "black",
+                               lwd = gp$pattern_linewidth %||% 1,
+                               lty = "solid")
+    make_line_pattern_grob(x, y, width, height,
+      angle_degs          = c(angle, angle + 90),
+      spacing_multipliers = c(1, 1),
+      spacing_npc         = spacing_npc,
+      line_gp             = line_gp,
+      poly_x              = params$poly_x,
+      poly_y              = params$poly_y
     )
   })
 
   # horizontal — flat lines (angle fixed at 0°; name defines orientation)
   register_pattern("horizontal", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                          lwd = gp$pattern_linewidth %||% 1,
-                          lty = "solid")
-    clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = 0, spacing_npc = spacing, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y)
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    line_gp     <- grid::gpar(col = gp$pattern_colour %||% "black",
+                               lwd = gp$pattern_linewidth %||% 1,
+                               lty = "solid")
+    make_line_pattern_grob(x, y, width, height,
+      angle_degs          = 0,
+      spacing_multipliers = 1,
+      spacing_npc         = spacing_npc,
+      line_gp             = line_gp,
+      poly_x              = params$poly_x,
+      poly_y              = params$poly_y
     )
   })
 
   # vertical — straight-up lines (angle fixed at 90°; name defines orientation)
   register_pattern("vertical", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                          lwd = gp$pattern_linewidth %||% 1,
-                          lty = "solid")
-    clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg = 90, spacing_npc = spacing, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y)
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    line_gp     <- grid::gpar(col = gp$pattern_colour %||% "black",
+                               lwd = gp$pattern_linewidth %||% 1,
+                               lty = "solid")
+    make_line_pattern_grob(x, y, width, height,
+      angle_degs          = 90,
+      spacing_multipliers = 1,
+      spacing_npc         = spacing_npc,
+      line_gp             = line_gp,
+      poly_x              = params$poly_x,
+      poly_y              = params$poly_y
     )
   })
 
   # dots — grid of small circles; positions filtered to polygon interior when
-  # poly_x/poly_y are supplied.
+  # poly_x/poly_y are supplied. Placement logic lives in makeContent.DotPatternTree.
   register_pattern("dots", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    size    <- params$pattern_size    %||% 0.35
-    dot_gp  <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    size_npc    <- params$pattern_size    %||% 0.35
+    dot_gp      <- grid::gpar(col = NA, fill = gp$pattern_colour %||% "black")
 
-    # Dot radius in viewport-relative npc — used for both the circle size and
-    # the inset margin when filtering to polygon interior.
-    r_npc <- size * spacing / 2
-
-    # Centre the dot grid symmetrically in [0, 1].
-    # seq(spacing/2, 1-spacing/2, by=spacing) anchors the first dot at the
-    # near edge but leaves a larger remainder gap at the far edge when spacing
-    # does not divide evenly into 1. Generating from 0 and recentering ensures
-    # equal margins on all four sides of the viewport.
-    xs_raw <- seq(0, 1, by = spacing)
-    xs     <- xs_raw - mean(range(xs_raw)) + 0.5
-    ys_raw <- seq(0, 1, by = spacing)
-    ys     <- ys_raw - mean(range(ys_raw)) + 0.5
-
-    if (length(xs) == 0 || length(ys) == 0) return(grid::nullGrob())
-    gc <- expand.grid(x = xs, y = ys)
-    if (!is.null(params$poly_x)) {
-      px <- params$poly_x
-      py <- params$poly_y
-      n  <- length(px)
-      # Strip closing duplicate vertex (sf closed rings repeat the first
-      # vertex at the end). inset_poly produces bad results for zero-length
-      # edges; pip handles open polygons correctly without it.
-      if (n > 1 && abs(px[n] - px[1]) < 1e-10 && abs(py[n] - py[1]) < 1e-10) {
-        px <- px[-n]
-        py <- py[-n]
-      }
-      # Inset the polygon by the dot radius before pip filtering so that no
-      # dot centre is close enough to the boundary that its radius bleeds
-      # outside (or appears as a partial circle on geoms with clip paths).
-      inset <- inset_poly(px, py, r_npc)
-      keep  <- pip(gc$x, gc$y, inset$x, inset$y)
-      gc    <- gc[keep, , drop = FALSE]
-    }
-    if (nrow(gc) == 0) return(grid::nullGrob())
-    clipped_grob(x, y, width, height,
-      grid::circleGrob(
-        x  = grid::unit(gc$x, "npc"),
-        y  = grid::unit(gc$y, "npc"),
-        r  = grid::unit(r_npc, "npc"),
-        gp = dot_gp
-      )
+    dot_tree <- grid::gTree(
+      spacing_npc = spacing_npc,
+      size_npc    = size_npc,
+      dot_gp      = dot_gp,
+      poly_x      = params$poly_x,
+      poly_y      = params$poly_y,
+      cl          = "DotPatternTree"
     )
+    clipped_grob(x, y, width, height, dot_tree)
   })
 
   # weave — horizontal + diagonal for a woven look (angles fixed; composite
   # structure defines the pattern, not a single orientation angle)
   register_pattern("weave", function(x, y, width, height, gp, params) {
-    spacing <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
-    line_gp <- grid::gpar(col = gp$pattern_colour %||% "black",
-                          lwd = gp$pattern_linewidth %||% 0.8,
-                          lty = "solid")
-    clipped_grob(x, y, width, height,
-      hatch_lines(angle_deg =  45, spacing_npc = spacing * 2, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y),
-      hatch_lines(angle_deg = -45, spacing_npc = spacing * 2, gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y),
-      hatch_lines(angle_deg =   0, spacing_npc = spacing,     gp = line_gp,
-                  poly_x = params$poly_x, poly_y = params$poly_y)
+    spacing_npc <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+    line_gp     <- grid::gpar(col = gp$pattern_colour %||% "black",
+                               lwd = gp$pattern_linewidth %||% 0.8,
+                               lty = "solid")
+    make_line_pattern_grob(x, y, width, height,
+      angle_degs          = c(45, -45, 0),
+      spacing_multipliers = c(2, 2, 1),
+      spacing_npc         = spacing_npc,
+      line_gp             = line_gp,
+      poly_x              = params$poly_x,
+      poly_y              = params$poly_y
     )
   })
 
