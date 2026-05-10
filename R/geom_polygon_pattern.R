@@ -25,7 +25,9 @@ GeomPolygonPattern <- ggplot2::ggproto(
       "pattern_linewidth",
       "pattern_spacing",
       "pattern_angle",
-      "pattern_size"
+      "pattern_size",
+      "pattern_contrast_check",
+      "pattern_contrast_correct"
     )
   },
 
@@ -35,12 +37,14 @@ GeomPolygonPattern <- ggplot2::ggproto(
     linewidth = 0.5,
     linetype  = 1,
     alpha     = NA,
-    pattern           = "none",
-    pattern_colour    = "black",
-    pattern_linewidth = 1,
-    pattern_spacing   = 0.08,
-    pattern_angle     = 45,
-    pattern_size      = 0.4
+    pattern                  = "none",
+    pattern_colour           = "black",
+    pattern_linewidth        = 1,
+    pattern_spacing          = 0.08,
+    pattern_angle            = 45,
+    pattern_size             = 0.4,
+    pattern_contrast_check   = 0,
+    pattern_contrast_correct = FALSE
   ),
 
   draw_panel = function(self, data, panel_params, coord, rule = "evenodd") {
@@ -67,6 +71,8 @@ GeomPolygonPattern <- ggplot2::ggproto(
       )
     })
 
+    .contrast_failures <- character(0)
+
     overlay_grobs <- lapply(groups, function(grp) {
       pattern_name <- grp$pattern[1] %||% "none"
       if (pattern_name == "none") return(grid::nullGrob())
@@ -78,8 +84,35 @@ GeomPolygonPattern <- ggplot2::ggproto(
       if (bw <= 0 || bh <= 0) return(grid::nullGrob())
 
       pattern_fn <- get_pattern_fn(pattern_name)
+
+      # ---- Contrast check / correction ----------------------------------------
+      {
+        check_val <- grp$pattern_contrast_check[1] %||% 0
+        if (isTRUE(check_val)) check_val <- 3.0
+        threshold <- as.numeric(check_val)
+
+        correct <- isTRUE(grp$pattern_contrast_correct[1] %||% FALSE)
+        if (correct && threshold == 0) threshold <- 3.0
+
+        pc   <- grp$pattern_colour[1] %||% "black"
+        fill <- grp$fill[1]           %||% "white"
+
+        if (correct && threshold > 0) {
+          pc <- .apply_contrast_correction(pc, fill, threshold)
+        }
+
+        if (threshold > 0) {
+          ratio <- pattern_contrast(pc, fill)
+          if (ratio < threshold) {
+            .contrast_failures <<- c(.contrast_failures,
+              sprintf("contrast %.2f:1 (pattern_colour=%s, fill=%s)", ratio, pc, fill))
+          }
+        }
+      }
+      # -------------------------------------------------------------------------
+
       base_gp <- grid::gpar(
-        pattern_colour    = grp$pattern_colour[1]    %||% "black",
+        pattern_colour    = pc,
         pattern_linewidth = grp$pattern_linewidth[1] %||% 1
       )
       params <- list(
@@ -105,6 +138,24 @@ GeomPolygonPattern <- ggplot2::ggproto(
         pattern_grob
       }
     })
+
+    if (length(.contrast_failures) > 0) {
+      n   <- length(.contrast_failures)
+      low <- .contrast_failures[
+        which.min(as.numeric(sub("contrast ([0-9.]+):1.*", "\\1",
+                                 .contrast_failures)))
+      ]
+      rlang::warn(
+        paste0(
+          n, " shape", if (n > 1) "s", " ",
+          if (n > 1) "have" else "has",
+          " pattern contrast below threshold. ",
+          "Lowest: ", low, ". ",
+          "Set pattern_contrast_correct = TRUE to auto-adjust."
+        ),
+        call = NULL
+      )
+    }
 
     grid::gTree(
       children = do.call(grid::gList, c(base_grobs, overlay_grobs))

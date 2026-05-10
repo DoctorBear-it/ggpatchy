@@ -35,7 +35,9 @@ GeomRibbonPattern <- ggplot2::ggproto(
       "pattern_linewidth",
       "pattern_spacing",
       "pattern_angle",
-      "pattern_size"
+      "pattern_size",
+      "pattern_contrast_check",
+      "pattern_contrast_correct"
     )
   },
 
@@ -45,12 +47,14 @@ GeomRibbonPattern <- ggplot2::ggproto(
     linewidth = 0.5,
     linetype  = 1,
     alpha     = NA,
-    pattern           = "none",
-    pattern_colour    = "black",
-    pattern_linewidth = 1,
-    pattern_spacing   = 0.08,
-    pattern_angle     = 45,
-    pattern_size      = 0.4
+    pattern                  = "none",
+    pattern_colour           = "black",
+    pattern_linewidth        = 1,
+    pattern_spacing          = 0.08,
+    pattern_angle            = 45,
+    pattern_size             = 0.4,
+    pattern_contrast_check   = 0,
+    pattern_contrast_correct = FALSE
   ),
 
   draw_group = function(self, data, panel_params, coord,
@@ -91,8 +95,41 @@ GeomRibbonPattern <- ggplot2::ggproto(
     if (bw <= 0 || bh <= 0) return(base_grob)
 
     pattern_fn <- get_pattern_fn(pattern_name)
+
+    # ---- Contrast check / correction ------------------------------------------
+    {
+      check_val <- data$pattern_contrast_check[1] %||% 0
+      if (isTRUE(check_val)) check_val <- 3.0
+      threshold <- as.numeric(check_val)
+
+      correct <- isTRUE(data$pattern_contrast_correct[1] %||% FALSE)
+      if (correct && threshold == 0) threshold <- 3.0
+
+      pc   <- data$pattern_colour[1] %||% "black"
+      fill <- data$fill[1]           %||% "grey80"
+
+      if (correct && threshold > 0) {
+        pc <- .apply_contrast_correction(pc, fill, threshold)
+      }
+
+      if (threshold > 0) {
+        ratio <- pattern_contrast(pc, fill)
+        if (ratio < threshold) {
+          rlang::warn(
+            paste0(
+              "1 shape has pattern contrast below threshold. ",
+              sprintf("contrast %.2f:1 (pattern_colour=%s, fill=%s)", ratio, pc, fill),
+              ". Set pattern_contrast_correct = TRUE to auto-adjust."
+            ),
+            call = NULL
+          )
+        }
+      }
+    }
+    # ---------------------------------------------------------------------------
+
     base_gp <- grid::gpar(
-      pattern_colour    = data$pattern_colour[1]    %||% "black",
+      pattern_colour    = pc,
       pattern_linewidth = data$pattern_linewidth[1] %||% 1
     )
     params <- list(

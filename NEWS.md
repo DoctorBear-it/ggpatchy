@@ -1,3 +1,23 @@
+# ggpatchy 0.5.1
+
+## New features
+
+- New exported function `pattern_contrast(colour1, colour2)` returns the
+  WCAG 2.1 contrast ratio between two colours. Useful for pre-validating
+  colour choices programmatically.
+- New geom aesthetic `pattern_contrast_check`: set to a numeric threshold
+  (e.g. `3.0` for WCAG AA non-text) to receive a warning when any shape's
+  `pattern_colour` / `fill` contrast falls below it. `TRUE` is an alias for
+  `3.0`. Default `0` (disabled, no behaviour change).
+- New geom aesthetic `pattern_contrast_correct`: set to `TRUE` to
+  automatically adjust `pattern_colour` luminance to just meet the contrast
+  threshold before drawing. Correction is silent; the adjusted colour is
+  used for rendering only and does not modify your data. Default `FALSE`.
+  When `pattern_contrast_correct = TRUE` without an explicit
+  `pattern_contrast_check`, the correction threshold defaults to `3.0`.
+
+---
+
 # ggpatchy 0.5.0
 
 ## New features

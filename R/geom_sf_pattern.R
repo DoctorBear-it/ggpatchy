@@ -42,7 +42,9 @@ GeomSfPattern <- ggplot2::ggproto(
       "pattern_linewidth",
       "pattern_spacing",
       "pattern_angle",
-      "pattern_size"
+      "pattern_size",
+      "pattern_contrast_check",
+      "pattern_contrast_correct"
     )
   },
 
@@ -55,12 +57,14 @@ GeomSfPattern <- ggplot2::ggproto(
     linetype  = 1,
     alpha     = NA,
     stroke    = 0.5,
-    pattern           = "none",
-    pattern_colour    = "black",
-    pattern_linewidth = 1,
-    pattern_spacing   = 0.08,
-    pattern_angle     = 45,
-    pattern_size      = 0.35
+    pattern                  = "none",
+    pattern_colour           = "black",
+    pattern_linewidth        = 1,
+    pattern_spacing          = 0.08,
+    pattern_angle            = 45,
+    pattern_size             = 0.35,
+    pattern_contrast_check   = 0,
+    pattern_contrast_correct = FALSE
   ),
 
   draw_panel = function(self, data, panel_params, coord, legend = NULL,
@@ -86,9 +90,10 @@ GeomSfPattern <- ggplot2::ggproto(
       transformed$pattern %||% rep("none", nrow(transformed))
     )
 
-    has_geocollection <- FALSE
-    overlay_grobs     <- vector("list", nrow(transformed))
-    n_overlays        <- 0L
+    has_geocollection  <- FALSE
+    overlay_grobs      <- vector("list", nrow(transformed))
+    n_overlays         <- 0L
+    .contrast_failures <- character(0)
 
     for (i in seq_len(nrow(transformed))) {
       pat <- transformed$pattern[i]
@@ -103,9 +108,37 @@ GeomSfPattern <- ggplot2::ggproto(
       }
       if (!type_str %in% c("POLYGON", "MULTIPOLYGON")) next
 
-      pat_fn  <- get_pattern_fn(pat)
+      pat_fn <- get_pattern_fn(pat)
+
+      # ---- Contrast check / correction ----------------------------------------
+      {
+        check_val <- transformed$pattern_contrast_check[i] %||% 0
+        if (isTRUE(check_val)) check_val <- 3.0
+        threshold <- as.numeric(check_val)
+
+        correct <- isTRUE(transformed$pattern_contrast_correct[i] %||% FALSE)
+        if (correct && threshold == 0) threshold <- 3.0
+
+        pc   <- transformed$pattern_colour[i] %||% "black"
+        fill <- transformed$fill[i] %||% NA_character_
+
+        if (!is.na(fill) && fill != "transparent") {
+          if (correct && threshold > 0) {
+            pc <- .apply_contrast_correction(pc, fill, threshold)
+          }
+          if (threshold > 0) {
+            ratio <- pattern_contrast(pc, fill)
+            if (ratio < threshold) {
+              .contrast_failures <- c(.contrast_failures,
+                sprintf("contrast %.2f:1 (pattern_colour=%s, fill=%s)", ratio, pc, fill))
+            }
+          }
+        }
+      }
+      # -------------------------------------------------------------------------
+
       base_gp <- grid::gpar(
-        pattern_colour    = transformed$pattern_colour[i]    %||% "black",
+        pattern_colour    = pc,
         pattern_linewidth = transformed$pattern_linewidth[i] %||% 1
       )
       params_base <- list(
@@ -134,6 +167,24 @@ GeomSfPattern <- ggplot2::ggproto(
           }
         }
       }
+    }
+
+    if (length(.contrast_failures) > 0) {
+      n   <- length(.contrast_failures)
+      low <- .contrast_failures[
+        which.min(as.numeric(sub("contrast ([0-9.]+):1.*", "\\1",
+                                 .contrast_failures)))
+      ]
+      rlang::warn(
+        paste0(
+          n, " shape", if (n > 1) "s", " ",
+          if (n > 1) "have" else "has",
+          " pattern contrast below threshold. ",
+          "Lowest: ", low, ". ",
+          "Set pattern_contrast_correct = TRUE to auto-adjust."
+        ),
+        call = NULL
+      )
     }
 
     # has_geocollection flag ensures at most one warning per draw_panel call,

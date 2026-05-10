@@ -62,6 +62,74 @@ warn_na_patterns <- function(pattern_vec) {
   pattern_vec
 }
 
+#' Compute WCAG 2.1 contrast ratio between two colours
+#'
+#' Returns the contrast ratio as defined by WCAG 2.1. Values range from 1
+#' (no contrast) to 21 (black on white). The minimum for non-text graphical
+#' elements at Level AA is 3.0:1.
+#'
+#' @param colour1,colour2 Character colour strings (any format accepted by
+#'   [grDevices::col2rgb()]).
+#' @return A numeric scalar: the contrast ratio (always >= 1).
+#' @export
+#' @examples
+#' pattern_contrast("black", "white")   # 21
+#' pattern_contrast("black", "#4472C4") # typically around 5-6
+#' pattern_contrast("grey60", "white")  # typically around 3.5
+pattern_contrast <- function(colour1, colour2) {
+  l1 <- .relative_luminance(colour1)
+  l2 <- .relative_luminance(colour2)
+  lighter <- max(l1, l2)
+  darker  <- min(l1, l2)
+  (lighter + 0.05) / (darker + 0.05)
+}
+
+# Internal: WCAG 2.1 relative luminance for a single colour string.
+.relative_luminance <- function(colour) {
+  rgb <- grDevices::col2rgb(colour) / 255
+  chan <- ifelse(
+    rgb <= 0.04045,
+    rgb / 12.92,
+    ((rgb + 0.055) / 1.055) ^ 2.4
+  )
+  # ITU-R BT.709 coefficients
+  0.2126 * chan[1] + 0.7152 * chan[2] + 0.0722 * chan[3]
+}
+
+# Adjust pattern_colour luminance toward black or white until contrast vs fill
+# meets the threshold. Returns the (possibly adjusted) colour as a hex string.
+# If the threshold cannot be met even at pure black or white, returns whichever
+# extreme gives the higher contrast.
+.apply_contrast_correction <- function(pattern_colour, fill, threshold) {
+  if (is.null(fill) || is.na(fill) || fill %in% c("transparent", "NA")) {
+    return(pattern_colour)
+  }
+
+  current_ratio <- pattern_contrast(pattern_colour, fill)
+  if (current_ratio >= threshold) return(pattern_colour)
+
+  fill_lum  <- .relative_luminance(fill)
+  # Lighter fill → darken pattern; darker fill → lighten pattern.
+  direction <- if (fill_lum >= 0.5) -1L else 1L
+
+  rgb_current <- grDevices::col2rgb(pattern_colour) / 255
+
+  for (step in seq(0, 1, length.out = 21)[-1]) {
+    if (direction == -1L) {
+      adjusted <- rgb_current * (1 - step)
+    } else {
+      adjusted <- rgb_current + (1 - rgb_current) * step
+    }
+    hex <- grDevices::rgb(adjusted[1], adjusted[2], adjusted[3])
+    if (pattern_contrast(hex, fill) >= threshold) return(hex)
+  }
+
+  # Fallback: return pure black or white — whichever has higher contrast.
+  black_ratio <- pattern_contrast("black", fill)
+  white_ratio <- pattern_contrast("white", fill)
+  if (black_ratio >= white_ratio) "black" else "white"
+}
+
 # ---- Helpers ---------------------------------------------------------------
 
 # Build a viewport clipped to a rectangle, run `expr`, pop it.

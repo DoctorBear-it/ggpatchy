@@ -215,3 +215,97 @@ test_that("density variants work end-to-end in a ggplot", {
     scale_pattern_identity()
   expect_s3_class(ggplotGrob(p), "gtable")
 })
+
+# ---- Contrast checking and correction --------------------------------------
+
+test_that("pattern_contrast returns correct ratio for black and white", {
+  expect_equal(pattern_contrast("black", "white"), 21, tolerance = 0.01)
+})
+
+test_that("pattern_contrast is symmetric", {
+  expect_equal(
+    pattern_contrast("black", "#4472C4"),
+    pattern_contrast("#4472C4", "black"),
+    tolerance = 1e-10
+  )
+})
+
+test_that("pattern_contrast returns >= 1 for any inputs", {
+  pairs <- list(
+    c("black",   "white"),
+    c("grey50",  "white"),
+    c("grey50",  "grey80"),
+    c("red",     "blue"),
+    c("#123456", "#abcdef")
+  )
+  for (pair in pairs) {
+    expect_gte(pattern_contrast(pair[1], pair[2]), 1)
+  }
+})
+
+test_that(".apply_contrast_correction improves contrast to meet threshold", {
+  original       <- "grey70"
+  fill           <- "white"
+  original_ratio <- pattern_contrast(original, fill)
+  corrected      <- ggpatchy:::.apply_contrast_correction(original, fill, 3.0)
+  corrected_ratio <- pattern_contrast(corrected, fill)
+  expect_lt(original_ratio, 3.0)
+  expect_gte(corrected_ratio, 3.0)
+})
+
+test_that(".apply_contrast_correction returns unchanged colour when already passing", {
+  result <- ggpatchy:::.apply_contrast_correction("black", "white", 3.0)
+  expect_equal(result, "black")
+})
+
+test_that("pattern_contrast_check emits warning when contrast is below threshold", {
+  library(ggplot2)
+  df <- data.frame(g = "A", v = 1)
+  p <- ggplot(df, aes(g, v)) +
+    geom_col_pattern(
+      pattern                = "hatch",
+      fill                   = "black",
+      pattern_colour         = "grey20",
+      pattern_contrast_check = 3.0
+    )
+  expect_warning(ggplotGrob(p), "contrast")
+})
+
+test_that("pattern_contrast_check does not warn when contrast is sufficient", {
+  library(ggplot2)
+  df <- data.frame(g = "A", v = 1)
+  p <- ggplot(df, aes(g, v)) +
+    geom_col_pattern(
+      pattern                = "hatch",
+      fill                   = "white",
+      pattern_colour         = "black",
+      pattern_contrast_check = 3.0
+    )
+  expect_no_warning(ggplotGrob(p))
+})
+
+test_that("pattern_contrast_correct = TRUE silently fixes failing contrast", {
+  library(ggplot2)
+  df <- data.frame(g = "A", v = 1)
+  p <- ggplot(df, aes(g, v)) +
+    geom_col_pattern(
+      pattern                  = "hatch",
+      fill                     = "black",
+      pattern_colour           = "grey20",
+      pattern_contrast_check   = 3.0,
+      pattern_contrast_correct = TRUE
+    )
+  expect_no_warning(ggplotGrob(p))
+})
+
+test_that("pattern_contrast_check = FALSE (default) never warns", {
+  library(ggplot2)
+  df <- data.frame(g = "A", v = 1)
+  p <- ggplot(df, aes(g, v)) +
+    geom_col_pattern(
+      pattern        = "hatch",
+      fill           = "black",
+      pattern_colour = "black"
+    )
+  expect_no_warning(ggplotGrob(p))
+})
