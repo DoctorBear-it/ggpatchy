@@ -402,4 +402,29 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
                   poly_x = params$poly_x, poly_y = params$poly_y)
     )
   })
+
+  # ---- Named density variants --------------------------------------------
+  # Each variant is a thin wrapper that bakes in a pattern_spacing default.
+  # The base pattern function is called directly; no logic is duplicated.
+  # Users can still override pattern_spacing explicitly — %||% only fires
+  # when pattern_spacing is NULL.
+
+  .make_density_variant <- function(base_name, multiplier) {
+    force(base_name)
+    force(multiplier)
+    function(x, y, width, height, gp, params) {
+      params$pattern_spacing <- params$pattern_spacing %||%
+        (.PATTERN_SPACING_DEFAULT * multiplier)
+      get_pattern_fn(base_name)(x, y, width, height, gp, params)
+    }
+  }
+
+  for (.base in c("hatch", "crosshatch", "horizontal",
+                  "vertical", "dots", "weave")) {
+    register_pattern(paste0(.base, "_dense"),
+                     .make_density_variant(.base, 0.5))
+    register_pattern(paste0(.base, "_sparse"),
+                     .make_density_variant(.base, 2.0))
+  }
+  rm(.base)
 }

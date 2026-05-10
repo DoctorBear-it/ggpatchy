@@ -8,6 +8,7 @@ articles:
     contents:
       - design-philosophy
       - mapping-with-patterns
+      - pattern-reference
 
 reference:
   - title: Geoms

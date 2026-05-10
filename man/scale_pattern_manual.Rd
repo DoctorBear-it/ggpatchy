@@ -7,10 +7,12 @@
 scale_pattern_manual(values, ...)
 }
 \arguments{
-\item{values}{Named or unnamed character vector of pattern names. Valid
-built-in patterns: \code{"none"}, \code{"hatch"}, \code{"crosshatch"}, \code{"horizontal"},
-\code{"vertical"}, \code{"dots"}, \code{"weave"}. You can also supply names of custom
-patterns registered via \code{\link[=register_pattern]{register_pattern()}}.}
+\item{values}{Named or unnamed character vector of pattern names. Built-in
+base patterns: \code{"none"}, \code{"hatch"}, \code{"crosshatch"}, \code{"horizontal"},
+\code{"vertical"}, \code{"dots"}, \code{"weave"}. Each base pattern (except \code{"none"})
+also has \verb{_dense} and \verb{_sparse} variants (e.g. \code{"hatch_dense"},
+\code{"crosshatch_sparse"}) that use a pre-set tighter or looser spacing.
+Custom patterns registered via \code{\link[=register_pattern]{register_pattern()}} are also accepted.}
 
 \item{...}{Passed to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
 }

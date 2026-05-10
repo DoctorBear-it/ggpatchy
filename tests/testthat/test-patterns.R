@@ -147,3 +147,71 @@ test_that("hatch pattern angle changes line direction", {
   ys_diag  <- as.numeric(diag$children[[1]]$y)
   expect_false(isTRUE(all.equal(ys_horiz, ys_diag)))
 })
+
+# ---- Named density variants ------------------------------------------------
+
+test_that("all twelve density variants are registered", {
+  p <- list_patterns()
+  bases   <- c("hatch", "crosshatch", "horizontal", "vertical", "dots", "weave")
+  dense   <- paste0(bases, "_dense")
+  sparse  <- paste0(bases, "_sparse")
+  expect_true(all(c(dense, sparse) %in% p))
+})
+
+test_that("hatch_dense produces more line segments than hatch at default spacing", {
+  fn_base  <- get_pattern_fn("hatch")
+  fn_dense <- get_pattern_fn("hatch_dense")
+  base_gp  <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
+  params   <- list(pattern_angle = 45, pattern_size = 0.35)
+
+  count_segs <- function(fn) {
+    g  <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    pl <- g$children[[1]]
+    sum(is.na(as.numeric(pl$x)))
+  }
+  expect_gt(count_segs(fn_dense), count_segs(fn_base))
+})
+
+test_that("hatch_sparse produces fewer line segments than hatch at default spacing", {
+  fn_base   <- get_pattern_fn("hatch")
+  fn_sparse <- get_pattern_fn("hatch_sparse")
+  base_gp   <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
+  params    <- list(pattern_angle = 45, pattern_size = 0.35)
+
+  count_segs <- function(fn) {
+    g  <- fn(0, 0, 1, 1, gp = base_gp, params = params)
+    pl <- g$children[[1]]
+    sum(is.na(as.numeric(pl$x)))
+  }
+  expect_gt(count_segs(fn_base), count_segs(fn_sparse))
+})
+
+test_that("explicit pattern_spacing overrides the variant default", {
+  fn_dense <- get_pattern_fn("hatch_dense")
+  fn_base  <- get_pattern_fn("hatch")
+  base_gp  <- grid::gpar(pattern_colour = "black", pattern_linewidth = 1)
+
+  count_segs <- function(fn, spacing) {
+    g  <- fn(0, 0, 1, 1, gp = base_gp,
+             params = list(pattern_spacing = spacing,
+                           pattern_angle = 45, pattern_size = 0.35))
+    pl <- g$children[[1]]
+    sum(is.na(as.numeric(pl$x)))
+  }
+  # When spacing is supplied explicitly, hatch_dense and hatch produce
+  # identical output — the variant's baked-in default is not used.
+  expect_equal(count_segs(fn_dense, 0.1), count_segs(fn_base, 0.1))
+})
+
+test_that("density variants work end-to-end in a ggplot", {
+  library(ggplot2)
+  df <- data.frame(
+    g = c("A", "B", "C"),
+    v = c(1, 2, 3),
+    pat = c("hatch_dense", "dots_sparse", "crosshatch_dense")
+  )
+  p <- ggplot(df, aes(g, v, fill = g, pattern = pat)) +
+    geom_col_pattern() +
+    scale_pattern_identity()
+  expect_s3_class(ggplotGrob(p), "gtable")
+})

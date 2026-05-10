@@ -154,7 +154,10 @@ GeomTilePattern <- ggplot2::ggproto(
 #' \describe{
 #'   \item{`pattern`}{Character name of the pattern. One of `"none"`,
 #'     `"hatch"`, `"crosshatch"`, `"horizontal"`, `"vertical"`, `"dots"`,
-#'     `"weave"`, or a custom pattern registered with [register_pattern()].}
+#'     `"weave"`, or a custom pattern registered with [register_pattern()].
+#'     Each base pattern (except `"none"`) also has `_dense` and `_sparse`
+#'     variants (e.g. `"hatch_dense"`, `"dots_sparse"`) for pre-set tighter
+#'     or looser spacing.}
 #'   \item{`pattern_colour`}{Colour of pattern lines/dots. Default `"black"`.}
 #'   \item{`pattern_linewidth`}{Line width for line-based patterns. Default `1`.}
 #'   \item{`pattern_spacing`}{Spacing between pattern elements as a fraction

@@ -70,7 +70,10 @@ resolution of the x/y values so tiles tessellate without gaps).
 \describe{
 \item{\code{pattern}}{Character name of the pattern. One of \code{"none"},
 \code{"hatch"}, \code{"crosshatch"}, \code{"horizontal"}, \code{"vertical"}, \code{"dots"},
-\code{"weave"}, or a custom pattern registered with \code{\link[=register_pattern]{register_pattern()}}.}
+\code{"weave"}, or a custom pattern registered with \code{\link[=register_pattern]{register_pattern()}}.
+Each base pattern (except \code{"none"}) also has \verb{_dense} and \verb{_sparse}
+variants (e.g. \code{"hatch_dense"}, \code{"dots_sparse"}) for pre-set tighter
+or looser spacing.}
 \item{\code{pattern_colour}}{Colour of pattern lines/dots. Default \code{"black"}.}
 \item{\code{pattern_linewidth}}{Line width for line-based patterns. Default \code{1}.}
 \item{\code{pattern_spacing}}{Spacing between pattern elements as a fraction

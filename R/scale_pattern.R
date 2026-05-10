@@ -26,10 +26,12 @@ NULL
 #' order of `values` does not need to match the level order). When unnamed,
 #' values are matched positionally to levels.
 #'
-#' @param values Named or unnamed character vector of pattern names. Valid
-#'   built-in patterns: `"none"`, `"hatch"`, `"crosshatch"`, `"horizontal"`,
-#'   `"vertical"`, `"dots"`, `"weave"`. You can also supply names of custom
-#'   patterns registered via [register_pattern()].
+#' @param values Named or unnamed character vector of pattern names. Built-in
+#'   base patterns: `"none"`, `"hatch"`, `"crosshatch"`, `"horizontal"`,
+#'   `"vertical"`, `"dots"`, `"weave"`. Each base pattern (except `"none"`)
+#'   also has `_dense` and `_sparse` variants (e.g. `"hatch_dense"`,
+#'   `"crosshatch_sparse"`) that use a pre-set tighter or looser spacing.
+#'   Custom patterns registered via [register_pattern()] are also accepted.
 #' @param ... Passed to [ggplot2::discrete_scale()].
 #' @export
 #' @examples
