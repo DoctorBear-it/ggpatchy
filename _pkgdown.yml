@@ -6,6 +6,7 @@ template:
 articles:
   - title: Articles
     contents:
+      - design-philosophy
       - mapping-with-patterns
 
 reference:
