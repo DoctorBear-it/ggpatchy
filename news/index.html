@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,25 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.1" id="ggpatchy-061">ggpatchy 0.6.1<a class="anchor" aria-label="anchor" href="#ggpatchy-061"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-6-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-1"></a></h3>
+<ul><li>Named density variants (<code>hatch_dense</code>, <code>hatch_sparse</code>, <code>dots_dense</code>, etc.) now render correctly. Under the mm spacing model, <code>default_aes</code> always fills <code>pattern_spacing = 5</code> before the variant function is called, so the old <code>%||%</code>-based multiplier never fired — every variant rendered identically to its base pattern. Fixed by comparing the incoming spacing to <code>.PATTERN_SPACING_DEFAULT</code> with <code><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal()</a></code> and applying the multiplier only when the value is the package default, not a user override.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-fixes-0-6-1">Documentation fixes<a class="anchor" aria-label="anchor" href="#documentation-fixes-0-6-1"></a></h3>
+<ul><li>
+<code>NEWS.md</code> 0.6.0 legend bullet corrected: legend swatches continue to use <code>TARGET_REPS</code>-based spacing (not data spacing). The previous bullet incorrectly claimed this behaviour had changed.</li>
+<li>
+<code>pattern_spacing</code> and <code>pattern_size</code> docs in <code><a href="../reference/geom_density_pattern.html">geom_density_pattern()</a></code> updated from stale npc-era values (<code>0.08</code>, <code>0.4</code>) to current mm defaults (<code>5</code>, <code>0.5</code>).</li>
+<li>
+<code>README.md</code> parameter table and custom-pattern example updated to mm semantics.</li>
+<li>Vignette <code>pattern_spacing</code> values updated from npc-era fractions to mm.</li>
+<li>
+<code>ROADMAP.md</code> current-state section updated to v0.6.1; shipped items moved.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="ggpatchy-060">ggpatchy 0.6.0<a class="anchor" aria-label="anchor" href="#ggpatchy-060"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
@@ -42,7 +61,7 @@
 <code>pattern_spacing</code> now specifies spacing in <strong>millimetres</strong> (previously a dimensionless fraction of each shape’s bounding box). The default changes from <code>0.08</code> to <code>5</code> mm. Update existing code that sets <code>pattern_spacing</code> explicitly: <code>0.08</code> → <code>5</code>, <code>0.04</code> (dense) → <code>2.5</code>, <code>0.16</code> (sparse) → <code>10</code>, or similar.</li>
 <li>
 <code>pattern_size</code> for the <code>"dots"</code> pattern is now the dot <strong>radius</strong> in millimetres (previously dimensionless). Default changes from <code>0.4</code> to <code>0.5</code> mm.</li>
-<li>Legend key pattern density is no longer overridden to a fixed <code>TARGET_REPS</code>-based value. The legend now shows the same physical spacing as the data, which means legend swatches for dense patterns will look denser than for sparse patterns. This is correct behaviour.</li>
+<li>Legend key swatches continue to show approximately 3 pattern repetitions regardless of the <code>pattern_spacing</code> value in use. This is deliberate: a very sparse spacing (e.g. <code>20 mm</code>) would otherwise produce a blank swatch. The legend communicates pattern <em>type</em>, not density.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="why-this-change-0-6-0">Why this change<a class="anchor" aria-label="anchor" href="#why-this-change-0-6-0"></a></h3>

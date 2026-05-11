@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggpatchy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,23 +38,16 @@
 
 <p>Where ggpatchy is now, what it doesn’t do yet, and rough priority for what comes next. This is a planning doc — items here are not promises.</p>
 <div class="section level2">
-<h2 id="current-state-v050">Current state (v0.5.0)<a class="anchor" aria-label="anchor" href="#current-state-v050"></a></h2>
-<p>Ten geoms (<code>geom_col_pattern</code>, <code>geom_bar_pattern</code>, <code>geom_rect_pattern</code>, <code>geom_tile_pattern</code>, <code>geom_polygon_pattern</code>, <code>geom_ribbon_pattern</code>, <code>geom_area_pattern</code>, <code>geom_density_pattern</code>, <code>geom_violin_pattern</code>, <code>geom_sf_pattern</code>), nineteen built-in patterns (seven base patterns plus <code>_dense</code> and <code>_sparse</code> variants for each), three scales (<code>manual</code>, <code>identity</code>, <code>discrete</code>), a registration API for custom patterns, and visual regression tests. <code>R CMD check</code> is clean. Three vignettes cover the user-facing geoms, choropleth mapping, and the built-in pattern reference.</p>
+<h2 id="current-state-v060">Current state (v0.6.0)<a class="anchor" aria-label="anchor" href="#current-state-v060"></a></h2>
+<p>Ten geoms (<code>geom_col_pattern</code>, <code>geom_bar_pattern</code>, <code>geom_rect_pattern</code>, <code>geom_tile_pattern</code>, <code>geom_polygon_pattern</code>, <code>geom_ribbon_pattern</code>, <code>geom_area_pattern</code>, <code>geom_density_pattern</code>, <code>geom_violin_pattern</code>, <code>geom_sf_pattern</code>), nineteen built-in patterns (seven base patterns plus <code>_dense</code> and <code>_sparse</code> variants for each), three scales (<code>manual</code>, <code>identity</code>, <code>discrete</code>), a registration API for custom patterns, and visual regression tests. <code>R CMD check</code> is clean. Four vignettes cover the user-facing geoms, choropleth mapping, the built-in pattern reference, and design philosophy.</p>
 <p><code>geom_sf_pattern</code> requires the <code>sf</code> package (listed in <code>Suggests</code>). It supports POLYGON and MULTIPOLYGON geometries; GEOMETRYCOLLECTION produces a warning; LINESTRING and POINT render via the base geom without pattern overlays.</p>
 <p>On R ≥ 4.1 with a supporting device (ragg, Cairo PDF, SVG), polygon and sf patterns are clipped to the exact polygon boundary via the native graphics engine clip path API. On older R the fallback is bounding-box clipping.</p>
-<p>Pattern spacing is bounding-box relative: <code>pattern_spacing = 0.08</code> means 8% of the shape’s bounding box. This is consistent within a single shape but does <strong>not</strong> guarantee uniform visual density across shapes of different physical sizes in the same plot — see the top roadmap item.</p>
+<p>Pattern spacing is in <strong>millimetres</strong>: <code>pattern_spacing = 5</code> means 5 mm between pattern elements on every shape at every size. Grid resolves mm to device pixels inside the active shape viewport at draw time via <code>makeContent</code>-based deferral, giving uniform visual density across all shapes in the same plot regardless of their physical size.</p>
 <p>The package is small enough that one person can hold the whole thing in their head, which is the point.</p>
 </div>
 <div class="section level2">
 <h2 id="known-limitations">Known limitations<a class="anchor" aria-label="anchor" href="#known-limitations"></a></h2>
 <p>These are real, current limitations of the implementation. They aren’t bugs — they’re places where the code does something simpler than the user might expect.</p>
-<div class="section level3">
-<h3 id="pattern-density-varies-across-shapes-of-different-physical-size--priority-1">Pattern density varies across shapes of different physical size ⬅ priority #1<a class="anchor" aria-label="anchor" href="#pattern-density-varies-across-shapes-of-different-physical-size--priority-1"></a></h3>
-<p><strong>This is the most visible failure mode in production plots.</strong> <code>pattern_spacing</code> is currently a fraction of each shape’s bounding box. A large state (Texas) and a small state (Rhode Island) with the same <code>pattern_spacing</code> value get very different dot counts and line frequencies — not because the user asked for this, but because their bounding boxes differ by an order of magnitude. The dots pattern is especially punishing because absolute count differences read immediately.</p>
-<p>The fix is physical-unit spacing: <code>pattern_spacing</code> expressed in millimetres so that <code>spacing = 5</code> means “5mm between elements” on every shape at every size. Grid resolves mm to device pixels at draw time, independently of viewport size. This is the correct model and the only one that gives the user meaningful, predictable control.</p>
-<p>The spec for this work exists at <code>specs/SPEC_physical_unit_spacing.md</code>. It is a breaking change to <code>pattern_spacing</code> semantics (dimensionless → mm) and requires a <code>makeContent</code>-based deferral to convert mm → npc inside the active viewport at draw time. Target: 0.6.0.</p>
-<p><strong>The user contract:</strong> at default <code>pattern_spacing</code>, all standard patterns should look the same on a reference output (A4 at 150 DPI, typical chart element). Any deviation from that baseline is explicitly the user’s choice via <code>pattern_spacing</code>. The pattern-reference vignette (<code>vignettes/pattern-reference.Rmd</code>) establishes this baseline and serves as the visual definition of “correct”.</p>
-</div>
 <div class="section level3">
 <h3 id="orientation--y-not-supported-for-ribbonareaviolin">
 <code>orientation = "y"</code> not supported for ribbon/area/violin<a class="anchor" aria-label="anchor" href="#orientation--y-not-supported-for-ribbonareaviolin"></a></h3>
@@ -67,7 +60,7 @@
 </div>
 <div class="section level3">
 <h3 id="legends-use-geometry-derived-spacing-not-data-spacing">Legends use geometry-derived spacing, not data spacing<a class="anchor" aria-label="anchor" href="#legends-use-geometry-derived-spacing-not-data-spacing"></a></h3>
-<p><code>draw_key_pattern</code> in <code>aaa_draw_key.R</code> overrides <code>pattern_spacing</code> with a geometry-derived value (<code>0.9 / TARGET_REPS</code>) so the legend swatch always shows approximately 3 pattern repetitions regardless of the user’s chosen density. This is deliberate — the legend communicates pattern <em>type</em>, not density — but it means the legend swatch does not faithfully represent the visual density in the data area. When the physical-unit spacing fix lands (0.6.0), the legend will automatically be correct because mm spacing resolves identically in both contexts.</p>
+<p><code>draw_key_pattern</code> in <code>aaa_draw_key.R</code> overrides <code>pattern_spacing</code> with a geometry-derived value (<code>0.9 / TARGET_REPS</code>) so the legend swatch always shows approximately 3 pattern repetitions regardless of the user’s chosen density. This is deliberate — the legend communicates pattern <em>type</em>, not density — but it means the legend swatch does not faithfully represent the visual density in the data area.</p>
 </div>
 <div class="section level3">
 <h3 id="na-in-the-pattern-column-becomes-none-with-a-warning">NA in the pattern column becomes “none” with a warning<a class="anchor" aria-label="anchor" href="#na-in-the-pattern-column-becomes-none-with-a-warning"></a></h3>
@@ -82,18 +75,6 @@
 <h2 id="roadmap-1">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap-1"></a></h2>
 <p>Priority order. Items closer to the top will land first.</p>
 <div class="section level3">
-<h3 id="id_060--physical-unit-spacing-breaking-change">0.6.0 — physical-unit spacing (breaking change)<a class="anchor" aria-label="anchor" href="#id_060--physical-unit-spacing-breaking-change"></a></h3>
-<p><strong>Priority #1.</strong> Uniform visual density across all shapes in a plot.</p>
-<ul><li>
-<code>pattern_spacing</code> changes from a dimensionless bbox fraction to millimetres. Default <code>5</code> (mm). <code>pattern_size</code> for dots changes from dimensionless to mm, default <code>0.5</code> (mm).</li>
-<li>Implementation: <code>makeContent</code>-based deferral (<code>DotPatternTree</code>, <code>LinePatternTree</code> custom grob classes) so mm → npc conversion happens inside the active shape viewport at draw time, not in the pattern function body.</li>
-<li>All <code>default_aes</code> in all geom files updated. All <code>@param pattern_spacing</code> docs updated. All snapshots regenerated.</li>
-<li>
-<code>vignettes/design-philosophy.Rmd</code> rewritten to describe the mm model.</li>
-<li>Named density variants (<code>hatch_dense</code> etc.) automatically work correctly because they bake in a spacing multiplier against whatever the default is — no changes needed to variant registrations.</li>
-<li>See <code>specs/SPEC_physical_unit_spacing.md</code> for the full implementation spec.</li>
-</ul></div>
-<div class="section level3">
 <h3 id="speculative-no-commitment">Speculative (no commitment)<a class="anchor" aria-label="anchor" href="#speculative-no-commitment"></a></h3>
 <ul><li>
 <code>geom_boxplot_pattern</code> — requires deciding what “pattern” means for a shape with internal structure (whiskers, outlier points).</li>
@@ -105,6 +86,15 @@
 </div>
 <div class="section level2">
 <h2 id="shipped">Shipped<a class="anchor" aria-label="anchor" href="#shipped"></a></h2>
+<div class="section level3">
+<h3 id="id_060--physical-unit-spacing-breaking-change">0.6.0 — physical-unit spacing (breaking change)<a class="anchor" aria-label="anchor" href="#id_060--physical-unit-spacing-breaking-change"></a></h3>
+<ul><li>
+<del><code>pattern_spacing</code> changes from a dimensionless bbox fraction to millimetres. Default <code>5</code> (mm). <code>pattern_size</code> for dots changes from dimensionless to mm, default <code>0.5</code> (mm).</del> — shipped in v0.6.0.</li>
+<li>
+<del><code>makeContent</code>-based deferral (<code>DotPatternTree</code>, <code>LinePatternTree</code> grob classes) so mm → npc conversion happens inside the active shape viewport at draw time.</del> — shipped in v0.6.0.</li>
+<li>
+<del>Named density variants (<code>hatch_dense</code> etc.) bake in a spacing multiplier against the mm default — no changes needed to variant registrations.</del> — shipped in v0.6.0.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="id_050--named-density-variants">0.5.0 — named density variants<a class="anchor" aria-label="anchor" href="#id_050--named-density-variants"></a></h3>
 <ul><li>

@@ -94,8 +94,9 @@ this geom accepts:
 
 - `pattern_spacing`:
 
-  Spacing relative to the density bounding box (npc units). Default
-  `0.08`.
+  Spacing between pattern elements in millimetres. Default `5`. Smaller
+  values produce denser patterns; larger values produce sparser
+  patterns.
 
 - `pattern_angle`:
 
@@ -103,7 +104,7 @@ this geom accepts:
 
 - `pattern_size`:
 
-  Dot diameter in mm for the `"dots"` pattern. Default `0.4`.
+  Dot radius in millimetres for the `"dots"` pattern. Default `0.5`.
 
 ## Limitations
 

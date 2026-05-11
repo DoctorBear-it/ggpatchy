@@ -77,7 +77,7 @@ ggplot(hex, aes(x, y)) +
     fill           = "lightyellow",
     pattern_colour = "goldenrod",
     pattern_angle  = 30,
-    pattern_spacing = 0.07
+    pattern_spacing = 4
   ) +
   coord_fixed() +
   theme_void() +
@@ -253,9 +253,10 @@ Built-in patterns:
 | `dots`       | Regular dot grid              | No (fixed)                |
 | `weave`      | Woven over/under line texture | No (fixed)                |
 
-`pattern_spacing` is interpreted as a fraction of each shape’s bounding
-box, so the visual density stays consistent across shapes of any size.
-Custom patterns can be registered with
+`pattern_spacing` is in **millimetres**: `pattern_spacing = 5` places
+pattern elements 5 mm apart on every shape at every size. Visual density
+is uniform across all shapes in the same plot. Custom patterns can be
+registered with
 [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
 
 ## Known limitations
