@@ -44,7 +44,7 @@ test_that("geom_col_pattern all patterns renders correctly", {
 
 test_that("geom_col_pattern pattern_colour renders correctly", {
   p <- ggplot(bar_df, aes(group, value, fill = group, pattern = group)) +
-    geom_col_pattern(pattern_colour = "red", pattern_spacing = 0.05) +
+    geom_col_pattern(pattern_colour = "red", pattern_spacing = 3) +
     scale_pattern_manual(values = c(A = "hatch", B = "crosshatch",
                                     C = "dots",  D = "weave")) +
     theme_minimal()

@@ -47,11 +47,12 @@ GeomDensityPattern <- ggplot2::ggproto("GeomDensityPattern", GeomAreaPattern)
 #'     or looser spacing.}
 #'   \item{`pattern_colour`}{Colour of pattern lines/dots. Default `"black"`.}
 #'   \item{`pattern_linewidth`}{Line width for line-based patterns. Default `1`.}
-#'   \item{`pattern_spacing`}{Spacing relative to the density bounding box
-#'     (npc units). Default `0.08`.}
+#'   \item{`pattern_spacing`}{Spacing between pattern elements in millimetres.
+#'     Default `5`. Smaller values produce denser patterns; larger values produce
+#'     sparser patterns.}
 #'   \item{`pattern_angle`}{Angle in degrees for hatch patterns. Default `45`.}
-#'   \item{`pattern_size`}{Dot diameter in mm for the `"dots"` pattern.
-#'     Default `0.4`.}
+#'   \item{`pattern_size`}{Dot radius in millimetres for the `"dots"` pattern.
+#'     Default `0.5`.}
 #' }
 #'
 #' @section Limitations:

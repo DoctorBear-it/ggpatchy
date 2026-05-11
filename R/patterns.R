@@ -572,15 +572,24 @@ hatch_lines <- function(angle_deg = 45, spacing_npc = 0.08, gp = grid::gpar(),
   # ---- Named density variants --------------------------------------------
   # Each variant is a thin wrapper that bakes in a pattern_spacing default.
   # The base pattern function is called directly; no logic is duplicated.
-  # Users can still override pattern_spacing explicitly — %||% only fires
-  # when pattern_spacing is NULL.
+  # The multiplier is applied when pattern_spacing equals the package default,
+  # meaning the geom filled it from default_aes and the user did not set it.
+  # Any other value is a user override and is passed through unchanged.
+  # Edge case: a user who explicitly writes pattern_spacing = 5 on a _dense
+  # geom gets the multiplied value (2.5 mm), not 5 mm. This is accepted —
+  # anyone using hatch_dense presumably wants dense spacing; use the base
+  # pattern with an explicit spacing if you want exactly 5 mm.
 
   .make_density_variant <- function(base_name, multiplier) {
     force(base_name)
     force(multiplier)
     function(x, y, width, height, gp, params) {
-      params$pattern_spacing <- params$pattern_spacing %||%
-        (.PATTERN_SPACING_DEFAULT * multiplier)
+      s <- params$pattern_spacing %||% .PATTERN_SPACING_DEFAULT
+      if (isTRUE(all.equal(s, .PATTERN_SPACING_DEFAULT))) {
+        params$pattern_spacing <- .PATTERN_SPACING_DEFAULT * multiplier
+      } else {
+        params$pattern_spacing <- s
+      }
       get_pattern_fn(base_name)(x, y, width, height, gp, params)
     }
   }

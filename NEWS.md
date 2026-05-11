@@ -1,3 +1,26 @@
+# ggpatchy 0.6.1
+
+## Bug fixes
+
+- Named density variants (`hatch_dense`, `hatch_sparse`, `dots_dense`, etc.)
+  now render correctly. Under the mm spacing model, `default_aes` always
+  fills `pattern_spacing = 5` before the variant function is called, so the
+  old `%||%`-based multiplier never fired — every variant rendered identically
+  to its base pattern. Fixed by comparing the incoming spacing to
+  `.PATTERN_SPACING_DEFAULT` with `all.equal()` and applying the multiplier
+  only when the value is the package default, not a user override.
+
+## Documentation fixes
+
+- `NEWS.md` 0.6.0 legend bullet corrected: legend swatches continue to use
+  `TARGET_REPS`-based spacing (not data spacing). The previous bullet
+  incorrectly claimed this behaviour had changed.
+- `pattern_spacing` and `pattern_size` docs in `geom_density_pattern()` updated
+  from stale npc-era values (`0.08`, `0.4`) to current mm defaults (`5`, `0.5`).
+- `README.md` parameter table and custom-pattern example updated to mm semantics.
+- Vignette `pattern_spacing` values updated from npc-era fractions to mm.
+- `ROADMAP.md` current-state section updated to v0.6.1; shipped items moved.
+
 # ggpatchy 0.6.0
 
 ## Breaking changes
@@ -10,10 +33,10 @@
 - `pattern_size` for the `"dots"` pattern is now the dot **radius** in
   millimetres (previously dimensionless). Default changes from `0.4` to
   `0.5` mm.
-- Legend key pattern density is no longer overridden to a fixed
-  `TARGET_REPS`-based value. The legend now shows the same physical spacing
-  as the data, which means legend swatches for dense patterns will look
-  denser than for sparse patterns. This is correct behaviour.
+- Legend key swatches continue to show approximately 3 pattern repetitions
+  regardless of the `pattern_spacing` value in use. This is deliberate: a
+  very sparse spacing (e.g. `20 mm`) would otherwise produce a blank swatch.
+  The legend communicates pattern *type*, not density.
 
 ## Why this change
 

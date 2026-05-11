@@ -91,8 +91,8 @@ test_that("geom_violin_pattern missing violinwidth emits message and returns nul
     xmin = 0.55, xmax = 1.45,
     width = 0.9, weight = 1,
     pattern_colour = "black", pattern_linewidth = 1,
-    pattern_spacing = 0.08, pattern_angle = 45,
-    pattern_size = 0.4
+    pattern_spacing = 5, pattern_angle = 45,
+    pattern_size = 0.5
   )
   # suppress "Ignoring unknown parameters: trim, scale, bounds" — ggplot2's layer
   # validator fires this when stat_identity is given violin-specific params.

@@ -205,9 +205,10 @@ test_that("explicit pattern_spacing overrides the variant default", {
     pl    <- inner$children[[1]]
     sum(is.na(as.numeric(pl$x)))
   }
-  # When spacing is supplied explicitly, hatch_dense and hatch produce
-  # identical output — the variant's baked-in default is not used.
-  expect_equal(count_segs(fn_dense, 5), count_segs(fn_base, 5))
+  # When an explicit spacing that differs from the default is supplied,
+  # hatch_dense and hatch produce identical output — the variant multiplier
+  # is not applied. Use 8 (different from the default 5) to prove this.
+  expect_equal(count_segs(fn_dense, 8), count_segs(fn_base, 8))
 })
 
 test_that("density variants work end-to-end in a ggplot", {

@@ -186,7 +186,7 @@ test_that("geom_sf_pattern us states choropleth fill+pattern renders correctly",
       ggplot2::aes(fill = total_pop_15, pattern = REGION),
       pattern_colour    = "grey20",
       pattern_linewidth = 0.45,
-      pattern_spacing   = 0.09
+      pattern_spacing   = 5
     ) +
     scale_pattern_manual(
       values = c(
@@ -209,5 +209,12 @@ test_that("geom_sf_pattern us states choropleth fill+pattern renders correctly",
     ) +
     ggplot2::theme_minimal()
 
-  vdiffr::expect_doppelganger("sf-pattern-us-states-choropleth", p)
+  vdiffr::expect_doppelganger(
+    "sf-pattern-us-states-choropleth", p,
+    writer = function(plot, file, title = "") {
+      vdiffr:::svglite(file, width = 14, height = 8)
+      on.exit(grDevices::dev.off())
+      print(plot)
+    }
+  )
 })

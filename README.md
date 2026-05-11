@@ -65,9 +65,9 @@ list_patterns()  # see all registered patterns
 | `pattern`           | Pattern name                                | `"none"`  |
 | `pattern_colour`    | Line/dot colour                             | `"black"` |
 | `pattern_linewidth` | Line width (line patterns)                  | `1`       |
-| `pattern_spacing`   | Spacing as fraction of shape's bounding box | `0.08`    |
+| `pattern_spacing`   | Spacing between pattern elements (mm)       | `5`       |
 | `pattern_angle`     | Angle in degrees (`hatch`/`crosshatch`)     | `45`      |
-| `pattern_size`      | Dot size relative to spacing (`dots`)       | `0.35`    |
+| `pattern_size`      | Dot radius in mm for the `"dots"` pattern   | `0.5`     |
 
 ## Scales
 
@@ -83,21 +83,24 @@ list_patterns()  # see all registered patterns
 
 ## Custom patterns
 
-Register a function that takes the bounding box of the shape (in npc) plus
-graphical parameters, and returns any grid grob:
+Register a function with signature `fn(x, y, width, height, gp, params)` that
+returns a grid grob. `x/y/width/height` are in npc (0–1). `pattern_spacing`
+arrives in **millimetres** — use `unit(value, "mm")` so grid resolves it to
+device pixels at render time:
 
 ```r
 library(grid)
 
 register_pattern("zigzag", function(x, y, width, height, gp, params) {
-  spacing <- params$pattern_spacing %||% 0.1
+  spacing_mm <- params$pattern_spacing %||% 5
   line_gp <- gpar(col = gp$pattern_colour %||% "black",
                   lwd = gp$pattern_linewidth %||% 1)
-  ys <- seq(0, 1, by = spacing)
-  segs <- lapply(ys, function(y0) {
+  # Place rows in mm; the clipped viewport hides any that overshoot the shape.
+  row_mms <- seq(0, 500, by = spacing_mm)
+  segs <- lapply(row_mms, function(y_mm) {
     polylineGrob(
       x  = unit(c(0, 0.5, 1), "npc"),
-      y  = unit(c(y0, y0 + spacing / 2, y0), "npc"),
+      y  = unit(c(y_mm, y_mm + spacing_mm / 2, y_mm), "mm"),
       gp = line_gp
     )
   })
