@@ -78,14 +78,14 @@ list_patterns()  # see all registered patterns
 - `scale_pattern_manual(values = ...)` — explicit mapping; `values` may
   be a named character vector (matched to factor levels by name) or
   unnamed (matched positionally).
-- [`scale_pattern_identity()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_identity.md)
+- [`scale_pattern_identity()`](https://ggpatchy.org/reference/scale_pattern_identity.md)
   — use the data column’s values directly as pattern names. Best when
   your variable already contains valid pattern names like `"hatch"` or
   `"dots"`.
-- [`scale_pattern_discrete()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_discrete.md)
+- [`scale_pattern_discrete()`](https://ggpatchy.org/reference/scale_pattern_discrete.md)
   — auto-cycle through the built-in patterns in factor-level order. No
   name lookup; use
-  [`scale_pattern_identity()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_identity.md)
+  [`scale_pattern_identity()`](https://ggpatchy.org/reference/scale_pattern_identity.md)
   if you want value-as-pattern semantics.
 
 ## Custom patterns
@@ -129,25 +129,25 @@ ggplot(df, aes(group, value, fill = group, pattern = group)) +
 
 ## Geoms
 
-- [`geom_col_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+- [`geom_col_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
   — columns (`stat = "identity"`)
-- [`geom_bar_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+- [`geom_bar_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
   — bars (`stat = "count"`)
-- [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
+- [`geom_polygon_pattern()`](https://ggpatchy.org/reference/geom_polygon_pattern.md)
   — arbitrary polygons with path-clipped patterns
-- [`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+- [`geom_ribbon_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
   — ribbons and confidence bands
-- [`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+- [`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
   — filled area charts (stacks supported)
-- [`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+- [`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md)
   — violin plots
-- [`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+- [`geom_density_pattern()`](https://ggpatchy.org/reference/geom_density_pattern.md)
   — smooth density estimates
-- [`geom_rect_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+- [`geom_rect_pattern()`](https://ggpatchy.org/reference/geom_rect_pattern.md)
   — rectangles from `xmin/xmax/ymin/ymax`
-- [`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+- [`geom_tile_pattern()`](https://ggpatchy.org/reference/geom_rect_pattern.md)
   — tiles from centre coordinates
-- [`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+- [`geom_sf_pattern()`](https://ggpatchy.org/reference/geom_sf_pattern.md)
   — sf POLYGON / MULTIPOLYGON geometries (requires **sf**)
 
 ## Why not ggpattern?

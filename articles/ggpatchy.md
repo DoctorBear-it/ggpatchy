@@ -12,17 +12,17 @@ library(ggpatchy)
 
 ## Bar and column charts
 
-[`geom_col_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+[`geom_col_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
 and
-[`geom_bar_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+[`geom_bar_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
 are drop-in replacements for
 [`geom_col()`](https://ggplot2.tidyverse.org/reference/geom_bar.html)
 and
 [`geom_bar()`](https://ggplot2.tidyverse.org/reference/geom_bar.html).
 Map `pattern` to a discrete variable with
-[`scale_pattern_manual()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_manual.md)
+[`scale_pattern_manual()`](https://ggpatchy.org/reference/scale_pattern_manual.md)
 or
-[`scale_pattern_discrete()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_discrete.md).
+[`scale_pattern_discrete()`](https://ggpatchy.org/reference/scale_pattern_discrete.md).
 
 ``` r
 
@@ -43,7 +43,7 @@ ggplot(df, aes(category, value, fill = category, pattern = category)) +
 
 ![](ggpatchy_files/figure-html/bar-1.png)
 
-[`geom_bar_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+[`geom_bar_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
 uses `stat = "count"`:
 
 ``` r
@@ -61,7 +61,7 @@ ggplot(mpg, aes(class, fill = class, pattern = class)) +
 
 ## Polygons
 
-[`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
+[`geom_polygon_pattern()`](https://ggpatchy.org/reference/geom_polygon_pattern.md)
 clips patterns to the exact polygon boundary, not just the bounding box.
 This means concave shapes like crescents or L-shapes are handled
 correctly.
@@ -88,7 +88,7 @@ ggplot(hex, aes(x, y)) +
 
 ## Ribbon charts
 
-[`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+[`geom_ribbon_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
 adds patterns to confidence bands or any region defined by `ymin` and
 `ymax`.
 
@@ -135,7 +135,7 @@ ggplot(df2, aes(x, ymin = ymin, ymax = ymax,
 
 ## Area charts
 
-[`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+[`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
 mirrors
 [`geom_area()`](https://ggplot2.tidyverse.org/reference/geom_ribbon.html):
 it sets `ymin = 0` automatically and defaults to `position = "stack"`.
@@ -162,7 +162,7 @@ ggplot(df3, aes(x, y, fill = group, pattern = pattern)) +
 
 ## Violin charts
 
-[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+[`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md)
 adds patterns to violin plots. Use it as a drop-in replacement for
 [`geom_violin()`](https://ggplot2.tidyverse.org/reference/geom_violin.html).
 
@@ -181,7 +181,7 @@ ggplot(mpg, aes(class, hwy, fill = class, pattern = class)) +
 
 ## Density plots
 
-[`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+[`geom_density_pattern()`](https://ggpatchy.org/reference/geom_density_pattern.md)
 extends
 [`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html)
 for pattern fills on smooth density estimates.
@@ -200,11 +200,11 @@ ggplot(mpg, aes(hwy, fill = drv, pattern = drv)) +
 
 ## Rectangles and tiles
 
-[`geom_rect_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+[`geom_rect_pattern()`](https://ggpatchy.org/reference/geom_rect_pattern.md)
 and
-[`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+[`geom_tile_pattern()`](https://ggpatchy.org/reference/geom_rect_pattern.md)
 add pattern overlays to rectangle geoms.
-[`geom_tile_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_rect_pattern.md)
+[`geom_tile_pattern()`](https://ggpatchy.org/reference/geom_rect_pattern.md)
 is convenient for heatmap-style layouts where cells are specified by
 centre coordinates.
 
@@ -232,7 +232,7 @@ ggplot(blocks, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
 
 ## Choropleth maps
 
-[`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+[`geom_sf_pattern()`](https://ggpatchy.org/reference/geom_sf_pattern.md)
 works with sf geometry columns. It uses pattern to add a second encoding
 channel alongside fill colour, which is useful for accessibility
 (grayscale printing, colour-vision deficiency). See the **Mapping with
@@ -257,26 +257,26 @@ Built-in patterns:
 pattern elements 5 mm apart on every shape at every size. Visual density
 is uniform across all shapes in the same plot. Custom patterns can be
 registered with
-[`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
+[`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md).
 
 ## Known limitations
 
 **`stat = "identity"` with
-[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+[`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md)
 requires a `violinwidth` column.** The default stat (`"ydensity"`)
 computes `violinwidth` automatically from your raw data. If you pass
 `stat = "identity"` with pre-summarised density data, your data frame
 must include a `violinwidth` column (values in \[0, 1\] giving the
 normalised half-width at each `y` level). If the column is absent,
-[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+[`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md)
 emits an informative message and skips that group rather than crashing.
 
 **`orientation = "y"` (horizontal) is not supported for pattern
 overlays.**
-[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md),
-[`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md),
+[`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md),
+[`geom_ribbon_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md),
 and
-[`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+[`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
 all skip the pattern when `orientation = "y"` or `flipped_aes = TRUE`.
 The base shape still renders correctly. Use
 [`coord_flip()`](https://ggplot2.tidyverse.org/reference/coord_flip.html)

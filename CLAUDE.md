@@ -153,7 +153,7 @@ Five geoms extend existing ggplot2 ggproto classes:
 base grob plus a clipped pattern grob stacked in a `grobTree`.
 
 The
-[`draw_key_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/draw_key_pattern.md)
+[`draw_key_pattern()`](https://ggpatchy.org/reference/draw_key_pattern.md)
 function in `R/aaa_draw_key.R` (prefixed `aaa_` so it loads first
 alphabetically — geoms reference it at definition time) renders legend
 swatches. Legend swatches use a 2.5× spacing multiplier so patterns
@@ -164,11 +164,11 @@ don’t appear as a dense blob in the small key area.
 `R/scale_pattern.R` provides three discrete scales that map a variable
 to pattern names:
 
-- [`scale_pattern_manual()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_manual.md)
+- [`scale_pattern_manual()`](https://ggpatchy.org/reference/scale_pattern_manual.md)
   — explicit name→pattern mapping
-- [`scale_pattern_discrete()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_discrete.md)
+- [`scale_pattern_discrete()`](https://ggpatchy.org/reference/scale_pattern_discrete.md)
   — cycles through built-in patterns automatically
-- [`scale_pattern_identity()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_identity.md)
+- [`scale_pattern_identity()`](https://ggpatchy.org/reference/scale_pattern_identity.md)
   — uses the column value directly as a pattern name
 
 ### Known Limitations (see ROADMAP.md)

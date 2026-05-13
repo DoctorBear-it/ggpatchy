@@ -6,9 +6,9 @@ and
 [`ggplot2::geom_bar()`](https://ggplot2.tidyverse.org/reference/geom_bar.html)
 that add support for a `pattern` aesthetic. Map `pattern` to a discrete
 variable using
-[`scale_pattern_manual()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_manual.md)
+[`scale_pattern_manual()`](https://ggpatchy.org/reference/scale_pattern_manual.md)
 or
-[`scale_pattern_discrete()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_discrete.md).
+[`scale_pattern_discrete()`](https://ggpatchy.org/reference/scale_pattern_discrete.md).
 
 ## Usage
 
@@ -86,7 +86,7 @@ these geoms accept:
   Character name of the pattern. One of `"none"`, `"hatch"`,
   `"crosshatch"`, `"horizontal"`, `"vertical"`, `"dots"`, `"weave"`, or
   a custom pattern registered with
-  [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
+  [`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md).
   Each base pattern (except `"none"`) also has `_dense` and `_sparse`
   variants (e.g. `"hatch_dense"`, `"dots_sparse"`) for pre-set tighter
   or looser spacing.

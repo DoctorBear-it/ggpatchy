@@ -22,7 +22,7 @@ scale_pattern_discrete(...)
 Note: assignment is **positional against factor levels**, not by name.
 If your variable's values *are* pattern names (e.g. `"hatch"`, `"dots"`)
 and you want each level rendered as its own name, use
-[`scale_pattern_identity()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_identity.md)
+[`scale_pattern_identity()`](https://ggpatchy.org/reference/scale_pattern_identity.md)
 instead.
 
 ## Examples

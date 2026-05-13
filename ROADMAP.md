@@ -42,10 +42,10 @@ user might expect.
 
 ### `orientation = "y"` not supported for ribbon/area/violin
 
-[`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md),
-[`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md),
+[`geom_ribbon_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md),
+[`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md),
 and
-[`geom_violin_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_violin_pattern.md)
+[`geom_violin_pattern()`](https://ggpatchy.org/reference/geom_violin_pattern.md)
 do not support `orientation = "y"` (horizontal orientation). The base
 shape renders correctly; the pattern overlay is silently skipped. The
 internal coordinate layout under `flipped_aes = TRUE` makes safe pattern
@@ -166,7 +166,7 @@ Priority order. Items closer to the top will land first.
 - Pattern animations (e.g. for gganimate). Out of scope.
 - Custom pattern *parameters* beyond the existing fixed set. The escape
   hatch is
-  [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md)
+  [`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md)
   — define your own pattern function and pull whatever you want from
   `params`.
 

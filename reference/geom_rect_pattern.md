@@ -94,7 +94,7 @@ gaps).
   Character name of the pattern. One of `"none"`, `"hatch"`,
   `"crosshatch"`, `"horizontal"`, `"vertical"`, `"dots"`, `"weave"`, or
   a custom pattern registered with
-  [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
+  [`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md).
   Each base pattern (except `"none"`) also has `_dense` and `_sparse`
   variants (e.g. `"hatch_dense"`, `"dots_sparse"`) for pre-set tighter
   or looser spacing.

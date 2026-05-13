@@ -20,7 +20,7 @@
   use `TARGET_REPS`-based spacing (not data spacing). The previous
   bullet incorrectly claimed this behaviour had changed.
 - `pattern_spacing` and `pattern_size` docs in
-  [`geom_density_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_density_pattern.md)
+  [`geom_density_pattern()`](https://ggpatchy.org/reference/geom_density_pattern.md)
   updated from stale npc-era values (`0.08`, `0.4`) to current mm
   defaults (`5`, `0.5`).
 - `README.md` parameter table and custom-pattern example updated to mm
@@ -56,7 +56,7 @@ most visibly on choropleth maps where small and large regions received
 wildly different dot counts. Millimetre units resolve against device
 physical dimensions at draw time, independently of viewport size, giving
 uniform density across all shapes. See
-[`vignette("design-philosophy")`](https://doctorbear-it.github.io/ggpatchy/articles/design-philosophy.md)
+[`vignette("design-philosophy")`](https://ggpatchy.org/articles/design-philosophy.md)
 for full details.
 
 ### Interactive resizing
@@ -143,9 +143,9 @@ dimensions.
 
 ### Bug fixes and improvements
 
-- [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
+- [`geom_polygon_pattern()`](https://ggpatchy.org/reference/geom_polygon_pattern.md)
   and
-  [`geom_sf_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_sf_pattern.md)
+  [`geom_sf_pattern()`](https://ggpatchy.org/reference/geom_sf_pattern.md)
   now clip patterns to the exact polygon boundary using the R 4.1
   graphics engine clip path API. On R ≥ 4.1 with a supporting device
   (ragg, Cairo PDF, SVG), hatch lines and dots are correctly contained
@@ -158,14 +158,14 @@ dimensions.
 
 ### New geoms
 
-- [`geom_ribbon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+- [`geom_ribbon_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
   and
-  [`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+  [`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
   — ribbon and area charts with pattern overlays clipped to the ribbon
   polygon. `GeomRibbonPattern` overrides `draw_group` to reconstruct the
   ribbon polygon from the `coord$transform` output and feed it through
   the existing `clip_segments_to_poly` / `pip` pattern clipper.
-  [`geom_area_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_ribbon_pattern.md)
+  [`geom_area_pattern()`](https://ggpatchy.org/reference/geom_ribbon_pattern.md)
   is a thin `GeomAreaPattern` subclass that mirrors `GeomArea` by
   setting `ymin = 0`, `ymax = y` in `setup_data`; `position = "stack"`
   works correctly.
@@ -184,11 +184,11 @@ Initial CRAN release.
 
 ### Geoms
 
-- [`geom_col_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+- [`geom_col_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
   — column charts with pattern overlays (extends `GeomRect`).
-- [`geom_bar_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_col_pattern.md)
+- [`geom_bar_pattern()`](https://ggpatchy.org/reference/geom_col_pattern.md)
   — bar charts using `stat = "count"` (same underlying geom).
-- [`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md)
+- [`geom_polygon_pattern()`](https://ggpatchy.org/reference/geom_polygon_pattern.md)
   — arbitrary polygons with patterns clipped to the exact polygon
   boundary using in-R segment-polygon intersection and ray-casting
   point-in-polygon tests.
@@ -198,20 +198,20 @@ Initial CRAN release.
 Seven built-in patterns: `none`, `hatch`, `crosshatch`, `horizontal`,
 `vertical`, `dots`, `weave`. Custom patterns can be registered at
 runtime with
-[`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
+[`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md).
 
 ### Scales
 
-- [`scale_pattern_manual()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_manual.md)
+- [`scale_pattern_manual()`](https://ggpatchy.org/reference/scale_pattern_manual.md)
   — explicit name-to-pattern mapping.
-- [`scale_pattern_discrete()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_discrete.md)
+- [`scale_pattern_discrete()`](https://ggpatchy.org/reference/scale_pattern_discrete.md)
   — cycles through built-in patterns automatically.
-- [`scale_pattern_identity()`](https://doctorbear-it.github.io/ggpatchy/reference/scale_pattern_identity.md)
+- [`scale_pattern_identity()`](https://ggpatchy.org/reference/scale_pattern_identity.md)
   — uses the column value directly as a pattern name.
 
 ### Other
 
-- [`draw_key_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/draw_key_pattern.md)
+- [`draw_key_pattern()`](https://ggpatchy.org/reference/draw_key_pattern.md)
   — legend key renderer for pattern aesthetics.
-- [`list_patterns()`](https://doctorbear-it.github.io/ggpatchy/reference/list_patterns.md)
-  — list all registered pattern names.
+- [`list_patterns()`](https://ggpatchy.org/reference/list_patterns.md) —
+  list all registered pattern names.

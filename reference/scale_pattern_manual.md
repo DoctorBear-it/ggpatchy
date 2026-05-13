@@ -21,7 +21,7 @@ scale_pattern_manual(values, ...)
   also has `_dense` and `_sparse` variants (e.g. `"hatch_dense"`,
   `"crosshatch_sparse"`) that use a pre-set tighter or looser spacing.
   Custom patterns registered via
-  [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md)
+  [`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md)
   are also accepted.
 
 - ...:

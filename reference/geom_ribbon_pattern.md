@@ -6,7 +6,7 @@ and
 [`ggplot2::geom_area()`](https://ggplot2.tidyverse.org/reference/geom_ribbon.html)
 that add a `pattern` aesthetic. Patterns are clipped to the ribbon
 polygon using the same device-independent in-R geometry as
-[`geom_polygon_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/geom_polygon_pattern.md).
+[`geom_polygon_pattern()`](https://ggpatchy.org/reference/geom_polygon_pattern.md).
 
 ## Usage
 
@@ -92,7 +92,7 @@ these geoms accept:
   Character name of the pattern. One of `"none"`, `"hatch"`,
   `"crosshatch"`, `"horizontal"`, `"vertical"`, `"dots"`, `"weave"`, or
   a custom pattern registered with
-  [`register_pattern()`](https://doctorbear-it.github.io/ggpatchy/reference/register_pattern.md).
+  [`register_pattern()`](https://ggpatchy.org/reference/register_pattern.md).
   Each base pattern (except `"none"`) also has `_dense` and `_sparse`
   variants (e.g. `"hatch_dense"`, `"dots_sparse"`) for pre-set tighter
   or looser spacing.
